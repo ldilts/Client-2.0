@@ -39,7 +39,7 @@
                   </Group>
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jComboBox1" linkSize="4" min="-2" pref="820" max="-2" attributes="0"/>
+                          <Component id="clientComboBox" linkSize="4" min="-2" pref="820" max="-2" attributes="0"/>
                           <Component id="clientButton" linkSize="4" min="-2" pref="820" max="-2" attributes="0"/>
                           <Component id="jLabel1" linkSize="4" alignment="0" min="-2" pref="820" max="-2" attributes="0"/>
                       </Group>
@@ -62,7 +62,7 @@
                   <Component id="bluePanel" linkSize="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jComboBox1" min="-2" max="-2" attributes="0"/>
+              <Component id="clientComboBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="clientTextField" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
@@ -170,14 +170,13 @@
     </Component>
     <Component class="javax.swing.JTextField" name="clientTextField">
     </Component>
-    <Component class="javax.swing.JComboBox" name="jComboBox1">
+    <Component class="javax.swing.JComboBox" name="clientComboBox">
       <Properties>
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-          <StringArray count="4">
-            <StringItem index="0" value="Item 1"/>
-            <StringItem index="1" value="Item 2"/>
-            <StringItem index="2" value="Item 3"/>
-            <StringItem index="3" value="Item 4"/>
+          <StringArray count="3">
+            <StringItem index="0" value="Select a message"/>
+            <StringItem index="1" value="Yes"/>
+            <StringItem index="2" value="No"/>
           </StringArray>
         </Property>
       </Properties>

@@ -24,9 +24,11 @@ public class Message {
     private byte[] payloadBytes;
     
     public static final int numHeaderBytes = 4;
-    private final byte replyMessageCode = (byte) 0x72;
+    public static final byte replyMessageCode = (byte) 0x72;
     private final String connectionMessagePayload = "Hello";
     private final String confirmationMessagePayload = "Ok";
+    private final String yesMessagePayload = "Yes";
+    private final String noMessagePayload = "No";
     private final String errorMessagePayload = "Error";
     private final String keepAliveMessagePayload = "KA";
     private final String notSupportedMessagePayload = "Not Suppported";
@@ -70,6 +72,16 @@ public class Message {
         this.packMessage();
     }
     
+    public void makeYesMessage() {
+        this.makeMessageWithPayload(yesMessagePayload);
+        this.packMessage();
+    }
+    
+    public void makeNoMessage() {
+        this.makeMessageWithPayload(noMessagePayload);
+        this.packMessage();
+    }
+    
     public void makeTimeMessage() {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
         String sCertDate = dateFormat.format(new Date());
@@ -88,7 +100,7 @@ public class Message {
         this.packMessage();
     }
     
-    private void makeMessageWithPayload(String payload) {
+    public void makeMessageWithPayload(String payload) {
         
         this.messageCodeByte = this.replyMessageCode;
         this.payloadBytes = payload.getBytes();

@@ -73,27 +73,35 @@ public class ClientController implements Runnable {
             this.connectSocket();
 
             while (socketConnected && inputConnected) {
-                try {  
-                    int length = this.dataInput.available();
-                    if (length > 0) {
-                        byte startByte = dataInput.readByte();
-                           if (startByte == (byte) 0x78) {
-                                byte sessionIdByte = dataInput.readByte();
-                                byte messageCodeByte = dataInput.readByte();
-                                byte totalPayloadLengthByte = dataInput.readByte();
-                                byte[] payloadBytes = new byte[totalPayloadLengthByte - Message.numHeaderBytes];
+                if (this.theModel.getKeepAliveCount() >= 0) {
+                    try {  
+                        int length = this.dataInput.available();
+                        if (length > 0) {
+                            byte startByte = dataInput.readByte();
+                               if (startByte == (byte) 0x78) {
+                                    byte sessionIdByte = dataInput.readByte();
+                                    byte messageCodeByte = dataInput.readByte();
+                                    byte totalPayloadLengthByte = dataInput.readByte();
+                                    byte[] payloadBytes = new byte[totalPayloadLengthByte - Message.numHeaderBytes];
 
-                                for (int i = 0; i < totalPayloadLengthByte - Message.numHeaderBytes; i++) {
-                                    payloadBytes[i] = dataInput.readByte();
+                                    for (int i = 0; i < totalPayloadLengthByte - Message.numHeaderBytes; i++) {
+                                        payloadBytes[i] = dataInput.readByte();
+                                    }
+
+                                    Message message = new Message(sessionIdByte, 
+                                            messageCodeByte, 
+                                            totalPayloadLengthByte, 
+                                            payloadBytes);
+                                    this.messageReceived(message);
                                 }
-                                
-                                Message message = new Message(sessionIdByte, messageCodeByte, totalPayloadLengthByte, payloadBytes);
-                                this.messageReceived(message);
-                            }
+                        }
+                    } catch (IOException ex) {
+                        Logger.getLogger(ClientModel.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                } catch (IOException ex) {
-                    Logger.getLogger(ClientModel.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                } else {
+                    // Disconnect Sockets and Data Streams
+                    this.disconnectSocket();
+                }          
             }
             
             this.theView.setOutput("Disconnected from Server\n");
@@ -102,73 +110,58 @@ public class ClientController implements Runnable {
     }
     
     private void messageReceived(Message message) {
+        boolean success = true;
         switch (message.getMessageCodeByte()) {
             case (byte) 0x4B:
-                // Keep Alive -> Return Keep Alive
-                Message keepAliveMessage = new Message(this.sessionID);
-                keepAliveMessage.makeKeepAliveMessage();
-                
-                this.sendMessage(keepAliveMessage);
+                // Return Keep Alive
                 break;
             case (byte) 0xF1:
-                // Red on -> Retrun Confirmation
+                // Do Red on -> Retrun Confirmation
                 this.theView.setRedOn();
-                this.sendConfirmationReply();
                 break;
             case (byte) 0xF2:
-                // Red off -> Retrun Confirmation
+                // Do Red off -> Retrun Confirmation
                 this.theView.setRedOff();
-                this.sendConfirmationReply();
                 break;
             case (byte) 0xF3:
-                // Green on -> Retrun Confirmation
+                // Do Green on -> Retrun Confirmation
                 this.theView.setGreenOn();
-                this.sendConfirmationReply();
                 break;
             case (byte) 0xF4:
-                // Green off -> Retrun Confirmation
+                // Do Green off -> Retrun Confirmation
                 this.theView.setGreenOff();
-                this.sendConfirmationReply();
                 break;
             case (byte) 0xF5:
-                // Blue on -> Retrun Confirmation
+                // Do Blue on -> Retrun Confirmation
                 this.theView.setBlueOn();
-                this.sendConfirmationReply();
                 break;
             case (byte) 0xF6:
-                // Blue off -> Retrun Confirmation
+                // Do Blue off -> Retrun Confirmation
                 this.theView.setBlueOff();
-                this.sendConfirmationReply();
                 break;
             case (byte) 0xF8:
                 // Return date and time
-                Message timeMessage = new Message(this.sessionID);
-                timeMessage.makeTimeMessage();
-                
-                this.sendMessage(timeMessage);
                 break;
             case (byte) 0xF9:
-                // Display message from server -> Retrun Confirmation                
+                // Do Display message from server -> Retrun Confirmation                
                 try {
                     String decodedMessage = new String(message.getPayloadBytes(), "UTF-8"); 
                     this.theView.setOutput(decodedMessage);
                 } catch (UnsupportedEncodingException ex) {
                     Logger.getLogger(ClientController.class.getName()).log(Level.SEVERE, null, ex);
-                    
-                    this.sendErrorReply();
+                    success = false;
                     break;
                 }
                 
-                this.sendConfirmationReply();
+                success = true;
                 break;
             default:
                 // Return Command not supported
-                Message notSupportedMessage = new Message(this.sessionID);
-                notSupportedMessage.makeNotSupportedMessage();
-                
-                this.sendMessage(notSupportedMessage);
                 break;
         }
+        
+        // send response
+        this.sendMessage(this.theModel.makeResponseToMessage(message, success));
     }
     
     private void messageToBeSent(int command) {
@@ -180,19 +173,19 @@ public class ClientController implements Runnable {
         }
     }
     
-    private void sendConfirmationReply() {
-        Message confirmationMessage = new Message(this.sessionID);
-        confirmationMessage.makeConfirmationMessage();
-                
-        this.sendMessage(confirmationMessage);
-    }
-    
-    private void sendErrorReply() {
-        Message errorMessage = new Message(this.sessionID);
-        errorMessage.makeErrorMessage();
-                
-        this.sendMessage(errorMessage);
-    }
+//    private void sendConfirmationReply() {
+//        Message confirmationMessage = new Message(this.sessionID);
+//        confirmationMessage.makeConfirmationMessage();
+//                
+//        this.sendMessage(confirmationMessage);
+//    }
+//    
+//    private void sendErrorReply() {
+//        Message errorMessage = new Message(this.sessionID);
+//        errorMessage.makeErrorMessage();
+//                
+//        this.sendMessage(errorMessage);
+//    }
         
     private void connectSocket() {
         this.socketConnected = false;
@@ -248,6 +241,41 @@ public class ClientController implements Runnable {
         System.out.println("Connected to Server\n");
     }
     
+    private void disconnectSocket() {
+        while(inputConnected) {
+            try {
+                this.dataInput.close();
+                this.inputConnected = false;
+            } catch (IOException ex) {
+                /* ignore */
+//                Logger.getLogger(ClientController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
+        while (outputConnected) {
+            try {
+                this.dataOutput.close();
+                this.outputConnected = false;
+            } catch (IOException ex) {
+                /* ignore */
+    //            Logger.getLogger(ClientController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+        while (socketConnected) {
+            try {
+                this.clientSocket.close();
+                this.socketConnected = false;
+            } catch (IOException ex) {
+                /* ignore */
+    //            Logger.getLogger(ClientController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+        this.theView.setOutput("Disconnected from Server\n");
+        System.out.println("Disconnected from Server\n");
+    }
+    
     private void sendMessage(Message message) {
         try {
             // write the message
@@ -271,30 +299,34 @@ public class ClientController implements Runnable {
         public void actionPerformed(ActionEvent e) {
             if (hostAvailabilityCheck() && clientSocket.isConnected()) {
                 
+                switch (theView.getComboBoxIndex()) {
+                    case 0:
+                        // Send input text 
+                        Message userInputMessage = new Message((byte) sessionID);
+                        userInputMessage.makeMessageWithPayload(theView.getInput());
+                        sendMessage(userInputMessage);
+                        break;
+                    case 1:
+                        // Send YES
+                        Message yesMessage = new Message((byte) sessionID);
+                        yesMessage.makeYesMessage();
+                        sendMessage(yesMessage);
+                        break;
+                    case 2:
+                        // Send NO
+                        Message noMessage = new Message((byte) sessionID);
+                        noMessage.makeNoMessage();
+                        sendMessage(noMessage);
+                        break;
+                    default:
+                        // Nothing
+                        break;
+                }
+                
             } else {
                 theView.setOutput("Server Offline :(\n");
                 System.out.println("Server Offline :(\n");
             }
-            
-
-//            try{
-//
-////                        firstNumber = theView.getFirstNumber();
-////                        secondNumber = theView.getSecondNumber();
-////
-////                        theModel.addTwoNumbers(firstNumber, secondNumber);
-////
-////                        theView.setCalcSolution(theModel.getCalculationValue());
-//
-//            }
-//
-//            catch(NumberFormatException ex){
-//
-//                    System.out.println(ex);
-//
-////                        theView.displayErrorMessage("You Need to Enter 2 Integers");
-//
-//            }
         }	
     }
 }
