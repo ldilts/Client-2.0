@@ -33,6 +33,21 @@ public class ClientModel implements Runnable {
         return this.keepAliveCount;
     }
     
+    public void incrementKeepAliveCount() {
+        try {
+            mutex.acquire();
+            try {
+                if (keepAliveCount < 3) {
+                    this.keepAliveCount += 1;
+                }
+            } finally {
+                mutex.release();
+            }
+        } catch(InterruptedException ie) {
+            // ...
+        }
+    }
+    
     @Override
     public void run() {
         while(true) {
@@ -54,6 +69,11 @@ public class ClientModel implements Runnable {
                     // Ignore
             }
        }
+    }
+    
+    public void makeThread() {
+        this.thread = new Thread(this);
+        this.thread.start();
     }
     
     public void messageToBeSent(int command) {

@@ -70,7 +70,9 @@ public class ClientController implements Runnable {
     
     public void run() {
         while(true) {
+            System.out.println("Try to start again");
             this.connectSocket();
+            this.theModel.makeThread();
 
             while (socketConnected && inputConnected) {
                 if (this.theModel.getKeepAliveCount() >= 0) {
@@ -114,6 +116,7 @@ public class ClientController implements Runnable {
         switch (message.getMessageCodeByte()) {
             case (byte) 0x4B:
                 // Return Keep Alive
+                this.theModel.incrementKeepAliveCount();
                 break;
             case (byte) 0xF1:
                 // Do Red on -> Retrun Confirmation
