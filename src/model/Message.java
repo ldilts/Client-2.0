@@ -15,7 +15,7 @@ public class Message {
     private int byteArrayLength = 0;
     
     private final byte startByte = (byte) 0x78;
-    private byte sessionIdByte;
+    private final byte sessionIdByte;
     private byte messageCodeByte;
     private byte totalPayloadLengthByte;
     private byte[] payloadBytes;
@@ -23,6 +23,8 @@ public class Message {
     public static final int numHeaderBytes = 4;
     private final byte replyMessageCode = (byte) 0x72;
     private final String connectionMessagePayload = "Hello";
+    private final String confirmationMessagePayload = "Ok";
+    private final String keepAliveMessagePayload = "KA";
     
     public Message(int sessionID) {
         byte[] byteArrayInt = this.intToByteArray(sessionID);
@@ -35,7 +37,7 @@ public class Message {
         this.totalPayloadLengthByte = totalPayloadLengthByte;
         this.payloadBytes = payloadBytes;
         
-        this.byteArrayLength = this.numHeaderBytes + this.payloadBytes.length;
+        this.byteArrayLength = Message.numHeaderBytes + this.payloadBytes.length;
         
         this.packMessage();
     }
@@ -45,16 +47,35 @@ public class Message {
     }
     
     public void makeConnectMessage() {
+        this.makeMessageWithPayload(connectionMessagePayload);
+        this.packMessage();
+    }
+    
+    public void makeConfirmationMessage() {
+        this.makeMessageWithPayload(confirmationMessagePayload);
+        this.packMessage();
+    }
+    
+    public void makeKeepAliveMessage() {
+       this.makeMessageWithPayload(keepAliveMessagePayload);
+        this.packMessage();
+    }
+    
+    private void makeMessageWithPayload(String payload) {
         
         this.messageCodeByte = this.replyMessageCode;
-        this.payloadBytes = connectionMessagePayload.getBytes();
+        this.payloadBytes = payload.getBytes();
         
-        this.byteArrayLength = this.numHeaderBytes + this.payloadBytes.length;
+        this.byteArrayLength = Message.numHeaderBytes + this.payloadBytes.length;
         
         byte[] byteArrayInt = this.intToByteArray(byteArrayLength);
         this.totalPayloadLengthByte = (byte) byteArrayInt[byteArrayInt.length - 1];
 
         this.packMessage();
+    }
+    
+    public byte getMessageCodeByte() {
+        return this.messageCodeByte;
     }
     
     private void packMessage() {

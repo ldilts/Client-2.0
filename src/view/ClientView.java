@@ -68,7 +68,7 @@ public class ClientView extends javax.swing.JFrame {
 
         clientTextArea.setEditable(false);
         clientTextArea.setColumns(20);
-        clientTextArea.setFont(new java.awt.Font("Lucida Grande", 0, 24)); // NOI18N
+        clientTextArea.setFont(new java.awt.Font("Lucida Grande", 0, 14)); // NOI18N
         clientTextArea.setRows(5);
         jScrollPane1.setViewportView(clientTextArea);
 

@@ -13,6 +13,7 @@ package controller;
 //import java.util.logging.Logger;
 //import view.ClientView;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.DataInputStream;
@@ -20,6 +21,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.Socket;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import model.ClientModel;
@@ -32,8 +35,8 @@ import view.ClientView;
  */
 public class ClientController implements Runnable {
     
-    private ClientView theView;
-    private ClientModel theModel;
+    private final ClientView theView;
+    private final ClientModel theModel;
     
     private Socket clientSocket;
     private DataInputStream dataInput;
@@ -65,7 +68,6 @@ public class ClientController implements Runnable {
     }
     
     public void run() {
-        System.out.println("Oh hai\n");
         while(true) {
             this.connectSocket();
 
@@ -79,15 +81,13 @@ public class ClientController implements Runnable {
                                 byte messageCodeByte = dataInput.readByte();
                                 byte totalPayloadLengthByte = dataInput.readByte();
                                 byte[] payloadBytes = new byte[totalPayloadLengthByte - Message.numHeaderBytes];
-                                
-                                System.out.println("Length: " + payloadBytes.length);
 
                                 for (int i = 0; i < totalPayloadLengthByte - Message.numHeaderBytes; i++) {
                                     payloadBytes[i] = dataInput.readByte();
                                 }
                                 
-                                System.out.println("Length: " + payloadBytes.length);
                                 Message message = new Message(sessionIdByte, messageCodeByte, totalPayloadLengthByte, payloadBytes);
+                                this.messageReceived(message);
                             }
                     }
                 } catch (IOException ex) {
@@ -95,15 +95,80 @@ public class ClientController implements Runnable {
                 }
             }
             
-//            this.theView.setOutput("Disconnected from Server\n");
+            this.theView.setOutput("Disconnected from Server\n");
             System.out.println("Disconnected from Server\n");
         }
+    }
+    
+    private void messageReceived(Message message) {
+        switch (message.getMessageCodeByte()) {
+            case (byte) 0x4B:
+                // Keep Alive -> Return Keep Alive
+                Message keepAliveMessage = new Message(this.sessionID);
+                keepAliveMessage.makeKeepAliveMessage();
+                
+                this.sendMessage(keepAliveMessage);
+                break;
+            case (byte) 0xF1:
+                // Red on -> Retrun Confirmation
+
+                this.sendConfirmationReply();
+                break;
+            case (byte) 0xF2:
+                // Red off -> Retrun Confirmation
+
+                this.sendConfirmationReply();
+                break;
+            case (byte) 0xF3:
+                // Green on -> Retrun Confirmation
+
+                this.sendConfirmationReply();
+                break;
+            case (byte) 0xF4:
+                // Green off -> Retrun Confirmation
+
+                this.sendConfirmationReply();
+                break;
+            case (byte) 0xF5:
+                // Blue on -> Retrun Confirmation
+
+                this.sendConfirmationReply();
+                break;
+            case (byte) 0xF6:
+                // Blue off -> Retrun Confirmation
+
+                this.sendConfirmationReply();
+                break;
+            case (byte) 0xF8:
+                // Return date and time
+                
+                break;
+            case (byte) 0xF9:
+                // Display message from server -> Retrun Confirmation
+
+                this.sendConfirmationReply();
+                break;
+            default:
+                // Return Command not supported
+                
+                break;
+        }
+    }
+    
+    private void sendConfirmationReply() {
+        Message confirmationMessage = new Message(this.sessionID);
+        confirmationMessage.makeConfirmationMessage();
+                
+        this.sendMessage(confirmationMessage);
     }
         
     private void connectSocket() {
         this.socketConnected = false;
         this.outputConnected = false;
         this.inputConnected = false;
+        
+        this.theView.setOutput("Connecting to Server...\n");
+        System.out.println("Connecting to Server...\n");
         
         while (!socketConnected) {
             try {
@@ -147,7 +212,7 @@ public class ClientController implements Runnable {
 //                Logger.getLogger(ClientModel.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-//        this.theView.setOutput("Connected to Server\n");
+        this.theView.setOutput("Connected to Server\n");
         System.out.println("Connected to Server\n");
     }
     
