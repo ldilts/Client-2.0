@@ -113,7 +113,6 @@ public class ClientController implements Runnable {
             case (byte) 0xF1:
                 // Red on -> Retrun Confirmation
                 this.theView.setRedOn();
-
                 this.sendConfirmationReply();
                 break;
             case (byte) 0xF2:
@@ -164,7 +163,10 @@ public class ClientController implements Runnable {
                 break;
             default:
                 // Return Command not supported
+                Message notSupportedMessage = new Message(this.sessionID);
+                notSupportedMessage.makeNotSupportedMessage();
                 
+                this.sendMessage(notSupportedMessage);
                 break;
         }
     }

@@ -29,6 +29,7 @@ public class Message {
     private final String confirmationMessagePayload = "Ok";
     private final String errorMessagePayload = "Error";
     private final String keepAliveMessagePayload = "KA";
+    private final String notSupportedMessagePayload = "Not Suppported";
     
     public Message(int sessionID) {
         byte[] byteArrayInt = this.intToByteArray(sessionID);
@@ -78,7 +79,12 @@ public class Message {
     }
     
     public void makeKeepAliveMessage() {
-       this.makeMessageWithPayload(keepAliveMessagePayload);
+        this.makeMessageWithPayload(keepAliveMessagePayload);
+        this.packMessage();
+    }
+    
+    public void makeNotSupportedMessage() {
+        this.makeMessageWithPayload(notSupportedMessagePayload);
         this.packMessage();
     }
     
