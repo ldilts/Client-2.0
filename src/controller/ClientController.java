@@ -171,6 +171,15 @@ public class ClientController implements Runnable {
         }
     }
     
+    private void messageToBeSent(int command) {
+        switch (command) {
+            case 0:
+                break;
+            default:
+                break;
+        }
+    }
+    
     private void sendConfirmationReply() {
         Message confirmationMessage = new Message(this.sessionID);
         confirmationMessage.makeConfirmationMessage();
@@ -248,34 +257,44 @@ public class ClientController implements Runnable {
         }
     }
     
+    public static boolean hostAvailabilityCheck() { 
+        try (Socket s = new Socket(SERVER_ADDRESS, TCP_SERVER_PORT)) {
+            return true;
+        } catch (IOException ex) {
+            /* ignore */
+        }
+        return false;
+    }
+    
     class ClientListener implements ActionListener{
 
         public void actionPerformed(ActionEvent e) {
-
-            int firstNumber, secondNumber = 0;
-
-            // Surround interactions with the view with
-            // a try block in case numbers weren't
-            // properly entered
-
-            try{
-
-//                        firstNumber = theView.getFirstNumber();
-//                        secondNumber = theView.getSecondNumber();
-//
-//                        theModel.addTwoNumbers(firstNumber, secondNumber);
-//
-//                        theView.setCalcSolution(theModel.getCalculationValue());
-
+            if (hostAvailabilityCheck() && clientSocket.isConnected()) {
+                
+            } else {
+                theView.setOutput("Server Offline :(\n");
+                System.out.println("Server Offline :(\n");
             }
+            
 
-            catch(NumberFormatException ex){
-
-                    System.out.println(ex);
-
-//                        theView.displayErrorMessage("You Need to Enter 2 Integers");
-
-            }
+//            try{
+//
+////                        firstNumber = theView.getFirstNumber();
+////                        secondNumber = theView.getSecondNumber();
+////
+////                        theModel.addTwoNumbers(firstNumber, secondNumber);
+////
+////                        theView.setCalcSolution(theModel.getCalculationValue());
+//
+//            }
+//
+//            catch(NumberFormatException ex){
+//
+//                    System.out.println(ex);
+//
+////                        theView.displayErrorMessage("You Need to Enter 2 Integers");
+//
+//            }
         }	
     }
 }
