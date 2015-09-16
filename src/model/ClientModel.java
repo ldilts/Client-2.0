@@ -22,7 +22,7 @@ public class ClientModel implements Runnable {
     private int sessionID = 0;
     
     private int keepAliveCount = 0;
-    private Thread thread;
+    public Thread thread = null;
     private Semaphore mutex = new Semaphore(1);
     
     public ClientModel(int sessionID) {
@@ -33,12 +33,22 @@ public class ClientModel implements Runnable {
         return this.keepAliveCount;
     }
     
+    public boolean getIsThreadAlive() {
+        if (this.thread != null) {
+            return this.thread.isAlive();
+        } else {
+            return false;
+        }
+        
+    }
+    
     public void incrementKeepAliveCount() {
         try {
             mutex.acquire();
             try {
                 if (keepAliveCount < 3) {
                     this.keepAliveCount += 1;
+//                    System.out.println("Count++: " + this.keepAliveCount);
                 }
             } finally {
                 mutex.release();
@@ -50,28 +60,35 @@ public class ClientModel implements Runnable {
     
     @Override
     public void run() {
-        while(true) {
+        this.keepAliveCount = 1;
+        System.out.println("Starting new countdown thread.");
+        while(this.thread != null) {
             try {
                 this.mutex.acquire();
                 try {
                     if (this.keepAliveCount < 0) {
                         // Kill this thread
-                        this.thread.interrupt();
+                        this.thread = null;
+                        this.keepAliveCount = 0;
+                    } else {
+                        // Decrement KA Counter
+                        this.keepAliveCount -= 1;
+//                        System.out.println("Count--: " + this.keepAliveCount);
                     }
-                    
-                    // Decrement KA Counter
-                    this.keepAliveCount -= 1;
                 } finally {
                     this.mutex.release();
-                    this.thread.sleep(3680);
+                    this.thread.sleep(3500);
                 }
             } catch(InterruptedException ie) {
                     // Ignore
             }
        }
+        System.out.println("Game Over!");
     }
     
     public void makeThread() {
+        System.out.println("New Thread!");
+        this.keepAliveCount = 0;
         this.thread = new Thread(this);
         this.thread.start();
     }

@@ -50,10 +50,10 @@ public class ClientController implements Runnable {
     private Thread inputThread;
 
     private int sessionID = 0;
-//    private static final String SERVER_ADDRESS = "200.19.188.1";
-//    private static final int TCP_SERVER_PORT = 20200;
-    private static final String SERVER_ADDRESS = "localhost";
-    private static final int TCP_SERVER_PORT = 9999;
+    private static final String SERVER_ADDRESS = "200.19.188.1";
+    private static final int TCP_SERVER_PORT = 20200;
+//    private static final String SERVER_ADDRESS = "localhost";
+//    private static final int TCP_SERVER_PORT = 9999;
 	
     public ClientController(ClientView theView, ClientModel theModel, int sessionID) {
             this.theView = theView;
@@ -72,9 +72,9 @@ public class ClientController implements Runnable {
         while(true) {
             System.out.println("Try to start again");
             this.connectSocket();
-            this.theModel.makeThread();
+            
 
-            while (socketConnected && inputConnected) {
+            while (inputConnected) {
                 if (this.theModel.getKeepAliveCount() >= 0) {
                     try {  
                         int length = this.dataInput.available();
@@ -108,6 +108,12 @@ public class ClientController implements Runnable {
             
             this.theView.setOutput("Disconnected from Server\n");
             System.out.println("Disconnected from Server\n");
+            try {
+                this.inputThread.sleep(2000);//2 seconds
+            }
+            catch(InterruptedException ie){
+                ie.printStackTrace();
+            }
         }
     }
     
@@ -117,6 +123,15 @@ public class ClientController implements Runnable {
             case (byte) 0x4B:
                 // Return Keep Alive
                 this.theModel.incrementKeepAliveCount();
+                
+                if (this.outputConnected) {
+                    if (this.theModel.thread == null) {
+//                        if (!this.theModel.getIsThreadAlive()) {
+                            this.theModel.makeThread();
+//                        }
+                    }
+                }
+                
                 break;
             case (byte) 0xF1:
                 // Do Red on -> Retrun Confirmation
@@ -249,6 +264,7 @@ public class ClientController implements Runnable {
             try {
                 this.dataInput.close();
                 this.inputConnected = false;
+                System.out.println("Closed DataInput");
             } catch (IOException ex) {
                 /* ignore */
 //                Logger.getLogger(ClientController.class.getName()).log(Level.SEVERE, null, ex);
@@ -259,6 +275,7 @@ public class ClientController implements Runnable {
             try {
                 this.dataOutput.close();
                 this.outputConnected = false;
+                System.out.println("Closed DataOutput");
             } catch (IOException ex) {
                 /* ignore */
     //            Logger.getLogger(ClientController.class.getName()).log(Level.SEVERE, null, ex);
@@ -269,6 +286,7 @@ public class ClientController implements Runnable {
             try {
                 this.clientSocket.close();
                 this.socketConnected = false;
+                System.out.println("Closed Socket");
             } catch (IOException ex) {
                 /* ignore */
     //            Logger.getLogger(ClientController.class.getName()).log(Level.SEVERE, null, ex);
@@ -329,6 +347,8 @@ public class ClientController implements Runnable {
             } else {
                 theView.setOutput("Server Offline :(\n");
                 System.out.println("Server Offline :(\n");
+                
+                disconnectSocket();
             }
         }	
     }
