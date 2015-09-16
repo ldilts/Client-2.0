@@ -5,6 +5,7 @@
  */
 package view;
 
+import java.awt.Color;
 import java.awt.event.ActionListener;
 import javax.swing.JOptionPane;
 
@@ -32,6 +33,30 @@ public class ClientView extends javax.swing.JFrame {
 	
     public void setOutput(String text){
         this.clientTextArea.append(text + "\n");
+    }
+    
+    public void setRedOn() {
+        redPanel.setBackground(Color.red);
+    }
+    
+    public void setRedOff() {
+        redPanel.setBackground(new Color(255, 219, 219));
+    }
+    
+    public void setGreenOn() {
+        greenPanel.setBackground(Color.green);
+    }
+    
+    public void setGreenOff() {
+        greenPanel.setBackground(new Color(219, 255, 219));
+    }
+    
+    public void setBlueOn() {
+        bluePanel.setBackground(Color.blue);
+    }
+    
+    public void setBlueOff() {
+        bluePanel.setBackground(new Color(219, 219, 255));
     }
     
     public void addClientListener(ActionListener listenForClientButton){

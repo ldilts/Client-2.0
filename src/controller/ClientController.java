@@ -111,32 +111,33 @@ public class ClientController implements Runnable {
                 break;
             case (byte) 0xF1:
                 // Red on -> Retrun Confirmation
+                this.theView.setRedOn();
 
                 this.sendConfirmationReply();
                 break;
             case (byte) 0xF2:
                 // Red off -> Retrun Confirmation
-
+                this.theView.setRedOff();
                 this.sendConfirmationReply();
                 break;
             case (byte) 0xF3:
                 // Green on -> Retrun Confirmation
-
+                this.theView.setGreenOn();
                 this.sendConfirmationReply();
                 break;
             case (byte) 0xF4:
                 // Green off -> Retrun Confirmation
-
+                this.theView.setGreenOff();
                 this.sendConfirmationReply();
                 break;
             case (byte) 0xF5:
                 // Blue on -> Retrun Confirmation
-
+                this.theView.setBlueOn();
                 this.sendConfirmationReply();
                 break;
             case (byte) 0xF6:
                 // Blue off -> Retrun Confirmation
-
+                this.theView.setBlueOff();
                 this.sendConfirmationReply();
                 break;
             case (byte) 0xF8:
