@@ -19,6 +19,7 @@ import java.awt.event.ActionListener;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.ConnectException;
 import java.net.Socket;
 import java.text.SimpleDateFormat;
@@ -145,8 +146,17 @@ public class ClientController implements Runnable {
                 
                 break;
             case (byte) 0xF9:
-                // Display message from server -> Retrun Confirmation
-
+                // Display message from server -> Retrun Confirmation                
+                try {
+                    String decodedMessage = new String(message.getPayloadBytes(), "UTF-8"); 
+                    this.theView.setOutput(decodedMessage);
+                } catch (UnsupportedEncodingException ex) {
+                    Logger.getLogger(ClientController.class.getName()).log(Level.SEVERE, null, ex);
+                    
+                    this.sendErrorReply();
+                    break;
+                }
+                
                 this.sendConfirmationReply();
                 break;
             default:
@@ -161,6 +171,13 @@ public class ClientController implements Runnable {
         confirmationMessage.makeConfirmationMessage();
                 
         this.sendMessage(confirmationMessage);
+    }
+    
+    private void sendErrorReply() {
+        Message errorMessage = new Message(this.sessionID);
+        errorMessage.makeErrorMessage();
+                
+        this.sendMessage(errorMessage);
     }
         
     private void connectSocket() {

@@ -24,6 +24,7 @@ public class Message {
     private final byte replyMessageCode = (byte) 0x72;
     private final String connectionMessagePayload = "Hello";
     private final String confirmationMessagePayload = "Ok";
+    private final String errorMessagePayload = "Error";
     private final String keepAliveMessagePayload = "KA";
     
     public Message(int sessionID) {
@@ -46,6 +47,10 @@ public class Message {
         return this.byteArray;
     }
     
+    public byte[] getPayloadBytes() {
+        return this.payloadBytes;
+    }
+    
     public void makeConnectMessage() {
         this.makeMessageWithPayload(connectionMessagePayload);
         this.packMessage();
@@ -53,6 +58,11 @@ public class Message {
     
     public void makeConfirmationMessage() {
         this.makeMessageWithPayload(confirmationMessagePayload);
+        this.packMessage();
+    }
+    
+    public void makeErrorMessage() {
+        this.makeMessageWithPayload(errorMessagePayload);
         this.packMessage();
     }
     
