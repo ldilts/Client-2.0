@@ -5,6 +5,9 @@
  */
 package model;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 /**
  *
  * @author Lucas
@@ -63,6 +66,14 @@ public class Message {
     
     public void makeErrorMessage() {
         this.makeMessageWithPayload(errorMessagePayload);
+        this.packMessage();
+    }
+    
+    public void makeTimeMessage() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        String sCertDate = dateFormat.format(new Date());
+        
+        this.makeMessageWithPayload(sCertDate);
         this.packMessage();
     }
     

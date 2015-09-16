@@ -143,7 +143,10 @@ public class ClientController implements Runnable {
                 break;
             case (byte) 0xF8:
                 // Return date and time
+                Message timeMessage = new Message(this.sessionID);
+                timeMessage.makeTimeMessage();
                 
+                this.sendMessage(timeMessage);
                 break;
             case (byte) 0xF9:
                 // Display message from server -> Retrun Confirmation                
