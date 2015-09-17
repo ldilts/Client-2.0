@@ -82,22 +82,50 @@ public class ClientController implements Runnable {
                         int length = this.dataInput.available();
                         if (length > 0) {
                             byte startByte = dataInput.readByte();
-                               if (startByte == (byte) 0x78) {
-                                    byte sessionIdByte = dataInput.readByte();
-                                    byte messageCodeByte = dataInput.readByte();
-                                    byte totalPayloadLengthByte = dataInput.readByte();
-                                    byte[] payloadBytes = new byte[totalPayloadLengthByte - Message.numHeaderBytes];
+                            if (startByte == (byte) 0x78) {
+                                 byte sessionIdByte = dataInput.readByte();
+                                 byte messageCodeByte = dataInput.readByte();
+                                 byte totalPayloadLengthByte = dataInput.readByte();
 
-                                    for (int i = 0; i < totalPayloadLengthByte - Message.numHeaderBytes; i++) {
-                                        payloadBytes[i] = dataInput.readByte();
-                                    }
+                                 if (messageCodeByte == Message.serverReplyMessageCode || 
+                                         messageCodeByte == Message.keepAliveMessageCode) {
 
-                                    Message message = new Message(sessionIdByte, 
-                                            messageCodeByte, 
-                                            totalPayloadLengthByte, 
-                                            payloadBytes);
-                                    this.messageReceived(message);
-                                }
+                                     byte[] payloadBytes = new byte[totalPayloadLengthByte - Message.numHeaderBytes];
+
+                                     for (int i = 0; i < totalPayloadLengthByte - Message.numHeaderBytes; i++) {
+                                         payloadBytes[i] = dataInput.readByte();
+                                     }
+
+                                     Message message = new Message(sessionIdByte, 
+                                             messageCodeByte, 
+                                             totalPayloadLengthByte, 
+                                             payloadBytes);
+
+                                     this.messageReceived(message, true);
+                                 } else if (messageCodeByte == Message.clientReplyMessageCode) {
+
+                                     byte senderIDByte = dataInput.readByte();
+
+                                     byte[] payloadBytes = new byte[totalPayloadLengthByte - Message.numHeaderBytes - 1];
+
+                                     for (int i = 0; i < totalPayloadLengthByte - Message.numHeaderBytes - 1; i++) {
+                                         payloadBytes[i] = dataInput.readByte();
+                                     }
+
+                                     Message message = new Message(sessionIdByte, 
+                                             messageCodeByte, 
+                                             totalPayloadLengthByte,
+                                             senderIDByte,
+                                             payloadBytes);
+
+                                     this.messageReceived(message, false);
+                                 } else {
+                                     // Message not supported
+                                     System.out.println("Received a un-supported message");
+
+                                     // TODO remove remaining bytes from stream
+                                 }
+                             }
                         }
                     } catch (IOException ex) {
                         Logger.getLogger(ClientModel.class.getName()).log(Level.SEVERE, null, ex);
@@ -119,7 +147,7 @@ public class ClientController implements Runnable {
         }
     }
     
-    private void messageReceived(Message message) {
+    private void messageReceived(Message message, boolean fromServer) {
         boolean success = true;
         switch (message.getMessageCodeByte()) {
             case (byte) 0x4B:
@@ -181,7 +209,7 @@ public class ClientController implements Runnable {
         }
         
         // send response
-        this.sendMessage(this.theModel.makeResponseToMessage(message, success));
+        this.sendMessage(this.theModel.makeResponseToMessage(message, fromServer, success));
     }
     
     private void messageToBeSent(int command) {
@@ -326,7 +354,8 @@ public class ClientController implements Runnable {
                     case 0:
                         // Send input text 
                         Message userInputMessage = new Message((byte) sessionID);
-                        userInputMessage.makeMessageWithPayload(theView.getInput());
+                        // Send to whom?
+                        userInputMessage.makeMessageWithPayload(??, theView.getInput(), Message.sendTextMessageCode);
                         sendMessage(userInputMessage);
                         break;
                     case 1:

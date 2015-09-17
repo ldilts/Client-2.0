@@ -102,9 +102,15 @@ public class ClientModel implements Runnable {
         }
     }
     
-    public Message makeResponseToMessage(Message message, boolean success) {
+    public Message makeResponseToMessage(Message message, boolean fromServer, boolean success) {
         // The Deafult response is an OK message
-        Message response = this.makeConfirmationReplyMessage();
+        Message response;
+        if (fromServer) {
+            response = this.makeConfirmationReplyMessage(fromServer, (byte) 0x00);
+        } else {
+            response = this.makeConfirmationReplyMessage(fromServer, message.getSenderIDByte());
+        }
+        
         
         switch (message.getMessageCodeByte()) {
             case (byte) 0x4B:
@@ -135,20 +141,33 @@ public class ClientModel implements Runnable {
             case (byte) 0xF8:
                 // Return date and time
                 Message timeMessage = new Message(this.sessionID);
-                timeMessage.makeTimeMessage();
+                if (fromServer) {
+                    timeMessage.makeTimeMessage(fromServer, (byte) 0x00);
+                } else {
+                    timeMessage.makeTimeMessage(fromServer, message.getSenderIDByte());
+                }
                 
                 response = timeMessage;
                 break;
             case (byte) 0xF9:
                 // Display message from server -> Retrun Confirmation  
                 if (!success) {
-                    response = this.makeErrorReplyMessage();
+                    if (fromServer) {
+                        response = this.makeErrorReplyMessage(fromServer, (byte) 0x00);
+                    } else {
+                        response = this.makeErrorReplyMessage(fromServer, message.getSenderIDByte());
+                    }
                 }
                 break;
             default:
                 // Return Command not supported
                 Message notSupportedMessage = new Message(this.sessionID);
-                notSupportedMessage.makeNotSupportedMessage();
+                
+                if (fromServer) {
+                    notSupportedMessage.makeNotSupportedMessage(fromServer, (byte) 0x00);
+                } else {
+                    notSupportedMessage.makeNotSupportedMessage(fromServer, message.getSenderIDByte());
+                }
                 
                 response = notSupportedMessage;
                 break;
@@ -157,17 +176,23 @@ public class ClientModel implements Runnable {
         return response;
     }
     
-    private Message makeConfirmationReplyMessage() {
+    private Message makeConfirmationReplyMessage(boolean toServer, byte senderID) {
         Message confirmationMessage = new Message(this.sessionID);
-        confirmationMessage.makeConfirmationMessage();
-                
+            confirmationMessage.makeConfirmationMessage(toServer, senderID);
+
 //        this.sendMessage(confirmationMessage);
         return confirmationMessage;
     }
     
-    private Message makeErrorReplyMessage() {
+    private Message makeErrorReplyMessage(boolean fromServer, byte senderID) {
         Message errorMessage = new Message(this.sessionID);
-        errorMessage.makeErrorMessage();
+        
+        if (fromServer) {
+            errorMessage.makeErrorMessage(fromServer, (byte) 0x00);
+        } else {
+            errorMessage.makeErrorMessage(fromServer, senderID);
+        }
+        
                 
 //        this.sendMessage(errorMessage);
         return errorMessage;

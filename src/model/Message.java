@@ -21,10 +21,18 @@ public class Message {
     private final byte sessionIdByte;
     private byte messageCodeByte;
     private byte totalPayloadLengthByte;
+    private byte senderID;
     private byte[] payloadBytes;
     
+    private boolean senderIDIsSet = false;
+    
     public static final int numHeaderBytes = 4;
-    public static final byte replyMessageCode = (byte) 0x72;
+    public static final byte clientReplyMessageCode = (byte) 0x72; // r
+    public static final byte keepAliveMessageCode = (byte) 0x4B; // K
+    public static final byte serverReplyMessageCode = (byte) 0x52; // R
+    public static final byte serverCrossCommandMessageCode = (byte) 0x48; // H
+    public static final byte sendTextMessageCode = (byte) 0xF9;
+    
     private final String connectionMessagePayload = "Hello";
     private final String confirmationMessagePayload = "Ok";
     private final String yesMessagePayload = "Yes";
@@ -39,6 +47,7 @@ public class Message {
     }
     
     public Message(byte sessionIdByte, byte messageCodeByte, byte totalPayloadLengthByte, byte[] payloadBytes) {
+        // Only used when a message is received from the stream
         this.sessionIdByte = sessionIdByte;
         this.messageCodeByte = messageCodeByte;
         this.totalPayloadLengthByte = totalPayloadLengthByte;
@@ -46,7 +55,21 @@ public class Message {
         
         this.byteArrayLength = Message.numHeaderBytes + this.payloadBytes.length;
         
-        this.packMessage();
+        this.packReceiveMessage();
+    }
+    
+    public Message(byte sessionIdByte, byte messageCodeByte, byte totalPayloadLengthByte, byte senderID, byte[] payloadBytes) {
+        // Only used when a message is received from the stream
+        this.sessionIdByte = sessionIdByte;
+        this.messageCodeByte = messageCodeByte;
+        this.totalPayloadLengthByte = totalPayloadLengthByte;
+        this.senderID = senderID;
+        this.payloadBytes = payloadBytes;
+        
+        this.byteArrayLength = Message.numHeaderBytes + this.payloadBytes.length;
+        
+        this.senderIDIsSet = true;
+        this.packReceiveMessage();
     }
     
     public byte[] getByteArray() {
@@ -57,52 +80,82 @@ public class Message {
         return this.payloadBytes;
     }
     
+    public byte getMessageCodeByte() {
+        return this.messageCodeByte;
+    }
+    
+    public byte getSenderIDByte() {
+        return this.senderID;
+    }
+    
     public void makeConnectMessage() {
-        this.makeMessageWithPayload(connectionMessagePayload);
-        this.packMessage();
+        this.makeMessageWithPayloadAndCommand(connectionMessagePayload, Message.clientReplyMessageCode);
+        this.packSendMessage();
     }
     
-    public void makeConfirmationMessage() {
-        this.makeMessageWithPayload(confirmationMessagePayload);
-        this.packMessage();
+    public void makeConfirmationMessage(boolean toServer, byte senderID) {
+        if (toServer) {
+            this.makeMessageWithPayloadAndCommand(confirmationMessagePayload, Message.clientReplyMessageCode);
+        } else {
+            this.makeMessageWithPayloadAndCommand(senderID, confirmationMessagePayload, Message.clientReplyMessageCode);
+        }
+        
+        this.packSendMessage();
     }
     
-    public void makeErrorMessage() {
-        this.makeMessageWithPayload(errorMessagePayload);
-        this.packMessage();
+    public void makeErrorMessage(boolean toServer, byte senderID) {
+        if (toServer) {
+            this.makeMessageWithPayloadAndCommand(errorMessagePayload, Message.clientReplyMessageCode);
+        } else {
+            this.makeMessageWithPayloadAndCommand(senderID, errorMessagePayload, Message.clientReplyMessageCode);
+        }
+
+        this.packSendMessage();
     }
     
     public void makeYesMessage() {
-        this.makeMessageWithPayload(yesMessagePayload);
-        this.packMessage();
+        this.makeMessageWithPayloadAndCommand(yesMessagePayload, Message.clientReplyMessageCode);
+        this.packSendMessage();
     }
     
     public void makeNoMessage() {
-        this.makeMessageWithPayload(noMessagePayload);
-        this.packMessage();
+        this.makeMessageWithPayloadAndCommand(noMessagePayload, Message.clientReplyMessageCode);
+        this.packSendMessage();
     }
     
-    public void makeTimeMessage() {
+    public void makeTimeMessage(boolean toServer, byte senderID) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
         String sCertDate = dateFormat.format(new Date());
         
-        this.makeMessageWithPayload(sCertDate);
-        this.packMessage();
+        if (toServer) {
+            this.makeMessageWithPayloadAndCommand(sCertDate, Message.clientReplyMessageCode);
+        } else {
+            this.makeMessageWithPayloadAndCommand(senderID, sCertDate, Message.clientReplyMessageCode);
+        }
+        
+        this.packSendMessage();
     }
     
     public void makeKeepAliveMessage() {
-        this.makeMessageWithPayload(keepAliveMessagePayload);
-        this.packMessage();
+        this.makeMessageWithPayloadAndCommand(keepAliveMessagePayload, Message.keepAliveMessageCode);
+        this.packSendMessage();
     }
     
-    public void makeNotSupportedMessage() {
-        this.makeMessageWithPayload(notSupportedMessagePayload);
-        this.packMessage();
-    }
-    
-    public void makeMessageWithPayload(String payload) {
+    public void makeNotSupportedMessage(boolean toServer, byte senderID) {
+        if (toServer) {
+//            this.makeMessageWithPayloadAndCommand(sCertDate, Message.clientReplyMessageCode);
+            this.makeMessageWithPayloadAndCommand(notSupportedMessagePayload, Message.clientReplyMessageCode);
+        } else {
+//            this.makeMessageWithPayloadAndCommand(senderID, sCertDate, Message.clientReplyMessageCode);
+            this.makeMessageWithPayloadAndCommand(senderID, notSupportedMessagePayload, Message.clientReplyMessageCode);
+        }
         
-        this.messageCodeByte = this.replyMessageCode;
+        this.packSendMessage();
+    }
+    
+    public void makeMessageWithPayloadAndCommand(String payload, byte messageCodeByte) {
+        
+        this.messageCodeByte = messageCodeByte;
         this.payloadBytes = payload.getBytes();
         
         this.byteArrayLength = Message.numHeaderBytes + this.payloadBytes.length;
@@ -110,23 +163,63 @@ public class Message {
         byte[] byteArrayInt = this.intToByteArray(byteArrayLength);
         this.totalPayloadLengthByte = (byte) byteArrayInt[byteArrayInt.length - 1];
 
-        this.packMessage();
+        this.packSendMessage();
     }
     
-    public byte getMessageCodeByte() {
-        return this.messageCodeByte;
+    public void makeMessageWithPayloadAndCommand(byte destinationID, String payload, byte messageCodeByte) {
+        
+        this.messageCodeByte = messageCodeByte;
+        this.senderID = destinationID;
+        this.payloadBytes = payload.getBytes();
+        
+        this.byteArrayLength = Message.numHeaderBytes + this.payloadBytes.length + 2;
+        
+        byte[] byteArrayInt = this.intToByteArray(byteArrayLength);
+        this.totalPayloadLengthByte = (byte) byteArrayInt[byteArrayInt.length - 1];
+
+        this.senderIDIsSet = true;
+        this.packSendMessage();
     }
     
-    private void packMessage() {
+    private void packSendMessage() {
         this.byteArray = new byte[byteArrayLength];
         this.byteArray[0] = this.startByte;
         this.byteArray[1] = this.sessionIdByte;
         this.byteArray[2] = this.messageCodeByte;
         this.byteArray[3] = this.totalPayloadLengthByte;
         
-        for (int i = 0; i < this.payloadBytes.length; i++) {
-            byteArray[i + numHeaderBytes] = this.payloadBytes[i];
-        }
+        if (this.senderIDIsSet) {
+            this.byteArray[4] = this.senderID;
+            this.byteArray[5] = this.senderID;
+            
+            for (int i = 0; i < this.payloadBytes.length; i++) {
+                byteArray[i + numHeaderBytes + 2] = this.payloadBytes[i];
+            }
+        } else {
+            for (int i = 0; i < this.payloadBytes.length; i++) {
+                byteArray[i + numHeaderBytes] = this.payloadBytes[i];
+            }
+        }   
+    }
+    
+    private void packReceiveMessage() {
+        this.byteArray = new byte[byteArrayLength];
+        this.byteArray[0] = this.startByte;
+        this.byteArray[1] = this.sessionIdByte;
+        this.byteArray[2] = this.messageCodeByte;
+        this.byteArray[3] = this.totalPayloadLengthByte;
+        
+        if (this.senderIDIsSet) {
+            this.byteArray[4] = this.senderID;
+            
+            for (int i = 0; i < this.payloadBytes.length; i++) {
+                byteArray[i + numHeaderBytes + 1] = this.payloadBytes[i];
+            }
+        } else {
+            for (int i = 0; i < this.payloadBytes.length; i++) {
+                byteArray[i + numHeaderBytes] = this.payloadBytes[i];
+            }
+        }   
     }
     
     public final byte[] intToByteArray(int value) {
