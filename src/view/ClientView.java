@@ -35,6 +35,10 @@ public class ClientView extends javax.swing.JFrame {
         this.clientTextArea.append(text + "\n");
     }
     
+    public void setClientTitle(String title) {
+        this.setTitle(title);
+    }
+    
     public int getComboBoxIndex() {
         return this.clientComboBox.getSelectedIndex();
     }
@@ -144,7 +148,7 @@ public class ClientView extends javax.swing.JFrame {
 
         jLabel1.setFont(new java.awt.Font("Lucida Grande", 0, 8)); // NOI18N
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel1.setText("Client v2.0");
+        jLabel1.setText("Client v2.1");
 
         clientComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Select a message", "Yes", "No" }));
 
@@ -192,8 +196,8 @@ public class ClientView extends javax.swing.JFrame {
                 .addComponent(clientTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(clientButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 12, Short.MAX_VALUE)
-                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 16, Short.MAX_VALUE)
                 .addContainerGap())
         );
 

@@ -59,6 +59,8 @@ public class ClientController implements Runnable {
             this.theView = theView;
             this.theModel = theModel;
             this.sessionID = sessionID;
+            
+            this.theView.setClientTitle("Client " + this.sessionID);
 
             this.theView.addClientListener(new ClientListener());
     }
