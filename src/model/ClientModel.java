@@ -88,7 +88,7 @@ public class ClientModel implements Runnable {
     
     public void makeThread() {
         System.out.println("New Thread!");
-        this.keepAliveCount = 0;
+        this.keepAliveCount = 1;
         this.thread = new Thread(this);
         this.thread.start();
     }
