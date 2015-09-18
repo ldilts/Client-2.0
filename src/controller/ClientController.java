@@ -87,44 +87,48 @@ public class ClientController implements Runnable {
                                  byte messageCodeByte = dataInput.readByte();
                                  byte totalPayloadLengthByte = dataInput.readByte();
 
-                                 if (messageCodeByte == Message.serverReplyMessageCode || 
-                                         messageCodeByte == Message.keepAliveMessageCode) {
+                                 
+                                if (messageCodeByte == Message.clientReplyMessageCode) {
+                                    // From another Client
 
-                                     byte[] payloadBytes = new byte[totalPayloadLengthByte - Message.numHeaderBytes];
+                                    byte senderIDByte = dataInput.readByte();
 
-                                     for (int i = 0; i < totalPayloadLengthByte - Message.numHeaderBytes; i++) {
-                                         payloadBytes[i] = dataInput.readByte();
-                                     }
+                                    byte[] payloadBytes = new byte[totalPayloadLengthByte - Message.numHeaderBytes - 1];
 
-                                     Message message = new Message(sessionIdByte, 
-                                             messageCodeByte, 
-                                             totalPayloadLengthByte, 
-                                             payloadBytes);
+                                    for (int i = 0; i < totalPayloadLengthByte - Message.numHeaderBytes - 1; i++) {
+                                        payloadBytes[i] = dataInput.readByte();
+                                    }
 
-                                     this.messageReceived(message, true);
-                                 } else if (messageCodeByte == Message.clientReplyMessageCode) {
+                                    Message message = new Message(sessionIdByte, 
+                                            messageCodeByte, 
+                                            totalPayloadLengthByte,
+                                            senderIDByte,
+                                            payloadBytes);
 
-                                     byte senderIDByte = dataInput.readByte();
+                                        this.messageReceived(message, false);
+                                } else {
+                                    // From Server
 
-                                     byte[] payloadBytes = new byte[totalPayloadLengthByte - Message.numHeaderBytes - 1];
+                                    byte[] payloadBytes = new byte[totalPayloadLengthByte - Message.numHeaderBytes];
 
-                                     for (int i = 0; i < totalPayloadLengthByte - Message.numHeaderBytes - 1; i++) {
-                                         payloadBytes[i] = dataInput.readByte();
-                                     }
+                                    for (int i = 0; i < totalPayloadLengthByte - Message.numHeaderBytes; i++) {
+                                        payloadBytes[i] = dataInput.readByte();
+                                    }
 
-                                     Message message = new Message(sessionIdByte, 
-                                             messageCodeByte, 
-                                             totalPayloadLengthByte,
-                                             senderIDByte,
-                                             payloadBytes);
+                                    Message message = new Message(sessionIdByte, 
+                                            messageCodeByte, 
+                                            totalPayloadLengthByte, 
+                                            payloadBytes);
 
-                                     this.messageReceived(message, false);
-                                 } else {
-                                     // Message not supported
-                                     System.out.println("Received a un-supported message");
+                                    this.messageReceived(message, true);
+                                }
 
-                                     // TODO remove remaining bytes from stream
-                                 }
+//                                 else {
+//                                     // Message not supported
+//                                     System.out.println("Received a un-supported message");
+//
+//                                     // TODO remove remaining bytes from stream
+//                                 }
                              }
                         }
                     } catch (IOException ex) {
@@ -212,14 +216,14 @@ public class ClientController implements Runnable {
         this.sendMessage(this.theModel.makeResponseToMessage(message, fromServer, success));
     }
     
-    private void messageToBeSent(int command) {
-        switch (command) {
-            case 0:
-                break;
-            default:
-                break;
-        }
-    }
+//    private void messageToBeSent(int command) {
+//        switch (command) {
+//            case 0:
+//                break;
+//            default:
+//                break;
+//        }
+//    }
     
 //    private void sendConfirmationReply() {
 //        Message confirmationMessage = new Message(this.sessionID);
@@ -350,30 +354,74 @@ public class ClientController implements Runnable {
         public void actionPerformed(ActionEvent e) {
             if (hostAvailabilityCheck() && clientSocket.isConnected()) {
                 
-                switch (theView.getComboBoxIndex()) {
-                    case 0:
-                        // Send input text 
-                        Message userInputMessage = new Message((byte) sessionID);
-                        // Send to whom?
-                        userInputMessage.makeMessageWithPayload(??, theView.getInput(), Message.sendTextMessageCode);
-                        sendMessage(userInputMessage);
-                        break;
-                    case 1:
-                        // Send YES
-                        Message yesMessage = new Message((byte) sessionID);
-                        yesMessage.makeYesMessage();
-                        sendMessage(yesMessage);
-                        break;
-                    case 2:
-                        // Send NO
-                        Message noMessage = new Message((byte) sessionID);
-                        noMessage.makeNoMessage();
-                        sendMessage(noMessage);
-                        break;
-                    default:
-                        // Nothing
-                        break;
+                String destinationID = theView.getSecondInput();
+                
+                try {
+                    if (theView.isSecondInputEmpty() || (0 <= Integer.parseInt(destinationID) && Integer.parseInt(destinationID) <= 255)) {
+                        // Valid ID
+                        
+                        byte messageCodeByte;
+                        boolean forServer = true;
+                        byte destinationByte = 0x25;
+                        
+                        if (theView.isSecondInputEmpty()) {
+                            // Send to server
+                            messageCodeByte = Message.serverReplyMessageCode;
+                            forServer = true;
+                        } else {
+                            // Send to a specific tag
+                            destinationByte = (byte) Integer.parseInt(destinationID);
+                            messageCodeByte = Message.serverCrossCommandMessageCode;
+                            forServer = false;
+                        }
+                        
+//                        byte[] destinationIdBytes = destinationID.getBytes();
+//                        byte destinationByte = destinationIdBytes[destinationIdBytes.length - 1];
+                        
+                        
+                        switch (theView.getComboBoxIndex()) {
+                            case 0:
+                                // Send input text 
+                                Message userInputMessage = new Message((byte) sessionID);
+                                
+                                if (forServer) {
+                                    userInputMessage.makeMessageWithPayloadAndCommand(theView.getInput(), messageCodeByte);
+                                } else {
+                                    userInputMessage.makeMessageWithPayloadAndCommand(destinationByte, theView.getInput(), messageCodeByte, Message.sendTextMessageCode);
+                                }
+                                
+                                sendMessage(userInputMessage);
+                                break;
+                            case 1:
+                                // Send YES
+                                Message yesMessage = new Message((byte) sessionID);
+                                yesMessage.makeYesMessage();
+                                sendMessage(yesMessage);
+                                break;
+                            case 2:
+                                // Send NO
+                                Message noMessage = new Message((byte) sessionID);
+                                noMessage.makeNoMessage();
+                                sendMessage(noMessage);
+                                break;
+                            default:
+                                // Nothing
+                                break;
+                        }
+                    } else {
+                        // Invalid ID
+                        System.out.println("Invalid Destination ID");
+                        theView.setOutput("Invalid Destination ID");
+                    }
+                    
+                } catch (NumberFormatException ex) {
+                    System.out.println("Invalid Destination ID Format");
+                    theView.setOutput("Invalid Destination ID Format");
                 }
+                
+
+                
+                
                 
             } else {
                 theView.setOutput("Server Offline :(\n");

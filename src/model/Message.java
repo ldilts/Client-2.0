@@ -22,9 +22,11 @@ public class Message {
     private byte messageCodeByte;
     private byte totalPayloadLengthByte;
     private byte senderID;
+    private byte secondMessageCodeByte;
     private byte[] payloadBytes;
     
     private boolean senderIDIsSet = false;
+    private boolean secondMessageCodeIsSet = false;
     
     public static final int numHeaderBytes = 4;
     public static final byte clientReplyMessageCode = (byte) 0x72; // r
@@ -89,13 +91,13 @@ public class Message {
     }
     
     public void makeConnectMessage() {
-        this.makeMessageWithPayloadAndCommand(connectionMessagePayload, Message.clientReplyMessageCode);
+        this.makeMessageWithPayloadAndCommand(connectionMessagePayload, Message.serverReplyMessageCode);
         this.packSendMessage();
     }
     
     public void makeConfirmationMessage(boolean toServer, byte senderID) {
         if (toServer) {
-            this.makeMessageWithPayloadAndCommand(confirmationMessagePayload, Message.clientReplyMessageCode);
+            this.makeMessageWithPayloadAndCommand(confirmationMessagePayload, Message.serverReplyMessageCode);
         } else {
             this.makeMessageWithPayloadAndCommand(senderID, confirmationMessagePayload, Message.clientReplyMessageCode);
         }
@@ -105,21 +107,21 @@ public class Message {
     
     public void makeErrorMessage(boolean toServer, byte senderID) {
         if (toServer) {
-            this.makeMessageWithPayloadAndCommand(errorMessagePayload, Message.clientReplyMessageCode);
+            this.makeMessageWithPayloadAndCommand(errorMessagePayload, Message.serverReplyMessageCode);
         } else {
-            this.makeMessageWithPayloadAndCommand(senderID, errorMessagePayload, Message.clientReplyMessageCode);
+            this.makeMessageWithPayloadAndCommand(senderID, errorMessagePayload, Message.serverReplyMessageCode);
         }
 
         this.packSendMessage();
     }
     
     public void makeYesMessage() {
-        this.makeMessageWithPayloadAndCommand(yesMessagePayload, Message.clientReplyMessageCode);
+        this.makeMessageWithPayloadAndCommand(yesMessagePayload, Message.serverReplyMessageCode);
         this.packSendMessage();
     }
     
     public void makeNoMessage() {
-        this.makeMessageWithPayloadAndCommand(noMessagePayload, Message.clientReplyMessageCode);
+        this.makeMessageWithPayloadAndCommand(noMessagePayload, Message.serverReplyMessageCode);
         this.packSendMessage();
     }
     
@@ -128,9 +130,9 @@ public class Message {
         String sCertDate = dateFormat.format(new Date());
         
         if (toServer) {
-            this.makeMessageWithPayloadAndCommand(sCertDate, Message.clientReplyMessageCode);
+            this.makeMessageWithPayloadAndCommand(sCertDate, Message.serverReplyMessageCode);
         } else {
-            this.makeMessageWithPayloadAndCommand(senderID, sCertDate, Message.clientReplyMessageCode);
+            this.makeMessageWithPayloadAndCommand(senderID, sCertDate, Message.serverReplyMessageCode);
         }
         
         this.packSendMessage();
@@ -144,10 +146,10 @@ public class Message {
     public void makeNotSupportedMessage(boolean toServer, byte senderID) {
         if (toServer) {
 //            this.makeMessageWithPayloadAndCommand(sCertDate, Message.clientReplyMessageCode);
-            this.makeMessageWithPayloadAndCommand(notSupportedMessagePayload, Message.clientReplyMessageCode);
+            this.makeMessageWithPayloadAndCommand(notSupportedMessagePayload, Message.serverReplyMessageCode);
         } else {
 //            this.makeMessageWithPayloadAndCommand(senderID, sCertDate, Message.clientReplyMessageCode);
-            this.makeMessageWithPayloadAndCommand(senderID, notSupportedMessagePayload, Message.clientReplyMessageCode);
+            this.makeMessageWithPayloadAndCommand(senderID, notSupportedMessagePayload, Message.serverReplyMessageCode);
         }
         
         this.packSendMessage();
@@ -160,8 +162,8 @@ public class Message {
         
         this.byteArrayLength = Message.numHeaderBytes + this.payloadBytes.length;
         
-        byte[] byteArrayInt = this.intToByteArray(byteArrayLength);
-        this.totalPayloadLengthByte = (byte) byteArrayInt[byteArrayInt.length - 1];
+//        byte[] byteArrayInt = this.intToByteArray(byteArrayLength);
+        this.totalPayloadLengthByte = (byte) this.byteArrayLength;
 
         this.packSendMessage();
     }
@@ -181,6 +183,23 @@ public class Message {
         this.packSendMessage();
     }
     
+    public void makeMessageWithPayloadAndCommand(byte destinationID, String payload, byte messageCodeByte, byte secondMessageCodeByte) {
+        
+        this.messageCodeByte = messageCodeByte;
+        this.secondMessageCodeByte = secondMessageCodeByte;
+        this.senderID = destinationID;
+        this.payloadBytes = payload.getBytes();
+        
+        this.byteArrayLength = Message.numHeaderBytes + this.payloadBytes.length + 2;
+        
+        byte[] byteArrayInt = this.intToByteArray(byteArrayLength);
+        this.totalPayloadLengthByte = (byte) byteArrayInt[byteArrayInt.length - 1];
+
+        this.senderIDIsSet = true;
+        this.secondMessageCodeIsSet = true;
+        this.packSendMessage();
+    }
+    
     private void packSendMessage() {
         this.byteArray = new byte[byteArrayLength];
         this.byteArray[0] = this.startByte;
@@ -190,7 +209,7 @@ public class Message {
         
         if (this.senderIDIsSet) {
             this.byteArray[4] = this.senderID;
-            this.byteArray[5] = this.senderID;
+            this.byteArray[5] = this.secondMessageCodeByte;
             
             for (int i = 0; i < this.payloadBytes.length; i++) {
                 byteArray[i + numHeaderBytes + 2] = this.payloadBytes[i];

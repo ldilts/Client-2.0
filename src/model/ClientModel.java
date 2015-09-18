@@ -105,6 +105,7 @@ public class ClientModel implements Runnable {
     public Message makeResponseToMessage(Message message, boolean fromServer, boolean success) {
         // The Deafult response is an OK message
         Message response;
+        
         if (fromServer) {
             response = this.makeConfirmationReplyMessage(fromServer, (byte) 0x00);
         } else {
@@ -173,12 +174,16 @@ public class ClientModel implements Runnable {
                 break;
         }
         
+        if (message.getMessageCodeByte() != (byte) 0x4B) {
+            Message deleteMe = message;
+        }
+        
         return response;
     }
     
     private Message makeConfirmationReplyMessage(boolean toServer, byte senderID) {
         Message confirmationMessage = new Message(this.sessionID);
-            confirmationMessage.makeConfirmationMessage(toServer, senderID);
+        confirmationMessage.makeConfirmationMessage(toServer, senderID);
 
 //        this.sendMessage(confirmationMessage);
         return confirmationMessage;
