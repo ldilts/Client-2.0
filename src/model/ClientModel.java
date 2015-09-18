@@ -21,7 +21,7 @@ public class ClientModel implements Runnable {
 
     private int sessionID = 0;
     
-    private int keepAliveCount = 0;
+    private static int keepAliveCount = 0;
     public Thread thread = null;
     private Semaphore mutex = new Semaphore(1);
     
@@ -31,6 +31,10 @@ public class ClientModel implements Runnable {
     
     public int getKeepAliveCount() {
         return this.keepAliveCount;
+    }
+    
+    public void setKeepAliveCount(int num) {
+        keepAliveCount = num;
     }
     
     public boolean getIsThreadAlive() {
@@ -60,7 +64,7 @@ public class ClientModel implements Runnable {
     
     @Override
     public void run() {
-        this.keepAliveCount = 1;
+        this.keepAliveCount = 2;
         System.out.println("Starting new countdown thread.");
         while(this.thread != null) {
             try {

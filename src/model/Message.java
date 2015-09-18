@@ -35,6 +35,14 @@ public class Message {
     public static final byte serverCrossCommandMessageCode = (byte) 0x48; // H
     public static final byte sendTextMessageCode = (byte) 0xF9;
     
+    public static final byte redLedOnCode = (byte) 0xF1;
+    public static final byte redLedOffCode = (byte) 0xF2;
+    public static final byte greenLedOnCode = (byte) 0xF3;
+    public static final byte greenLedOffCode = (byte) 0xF4;
+    public static final byte blueLedOnCode = (byte) 0xF5;
+    public static final byte blueLedOffCode = (byte) 0xF6;
+    
+    
     private final String connectionMessagePayload = "Hello";
     private final String confirmationMessagePayload = "Ok";
     private final String yesMessagePayload = "Yes";

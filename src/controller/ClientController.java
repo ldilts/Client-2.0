@@ -136,6 +136,7 @@ public class ClientController implements Runnable {
                     }
                 } else {
                     // Disconnect Sockets and Data Streams
+                    this.theModel.setKeepAliveCount(2);
                     this.disconnectSocket();
                 }          
             }
@@ -393,17 +394,89 @@ public class ClientController implements Runnable {
                                 sendMessage(userInputMessage);
                                 break;
                             case 1:
-                                // Send YES
-                                Message yesMessage = new Message((byte) sessionID);
-                                yesMessage.makeYesMessage();
-                                sendMessage(yesMessage);
+                                // Red LED On
+                                Message redOnMessage = new Message((byte) sessionID);
+                                
+                                if (forServer) {
+                                    redOnMessage.makeMessageWithPayloadAndCommand("", messageCodeByte);
+                                } else {
+                                    redOnMessage.makeMessageWithPayloadAndCommand(destinationByte, "", messageCodeByte, Message.redLedOnCode);
+                                }
+                                
+                                sendMessage(redOnMessage);
                                 break;
                             case 2:
-                                // Send NO
-                                Message noMessage = new Message((byte) sessionID);
-                                noMessage.makeNoMessage();
-                                sendMessage(noMessage);
+                                // Red lED Off
+                                Message redOffMessage = new Message((byte) sessionID);
+                                
+                                if (forServer) {
+                                    redOffMessage.makeMessageWithPayloadAndCommand("", messageCodeByte);
+                                } else {
+                                    redOffMessage.makeMessageWithPayloadAndCommand(destinationByte, "", messageCodeByte, Message.redLedOffCode);
+                                }
+                                
+                                sendMessage(redOffMessage);
                                 break;
+                            case 3:
+                                // Green LED On
+                                Message greenOnMessage = new Message((byte) sessionID);
+                                
+                                if (forServer) {
+                                    greenOnMessage.makeMessageWithPayloadAndCommand("", messageCodeByte);
+                                } else {
+                                    greenOnMessage.makeMessageWithPayloadAndCommand(destinationByte, "", messageCodeByte, Message.greenLedOnCode);
+                                }
+                                
+                                sendMessage(greenOnMessage);
+                                break;
+                            case 4:
+                                // Green LED Off
+                                Message greenOffMessage = new Message((byte) sessionID);
+                                
+                                if (forServer) {
+                                    greenOffMessage.makeMessageWithPayloadAndCommand("", messageCodeByte);
+                                } else {
+                                    greenOffMessage.makeMessageWithPayloadAndCommand(destinationByte, "", messageCodeByte, Message.greenLedOffCode);
+                                }
+                                
+                                sendMessage(greenOffMessage);
+                                break;
+                            case 5:
+                                // Blue LED On
+                                Message blueOnMessage = new Message((byte) sessionID);
+                                
+                                if (forServer) {
+                                    blueOnMessage.makeMessageWithPayloadAndCommand("", messageCodeByte);
+                                } else {
+                                    blueOnMessage.makeMessageWithPayloadAndCommand(destinationByte, "", messageCodeByte, Message.blueLedOnCode);
+                                }
+                                
+                                sendMessage(blueOnMessage);
+                                break;
+                            case 6:
+                                // Blue LED Off
+                                Message blueOffMessage = new Message((byte) sessionID);
+                                
+                                if (forServer) {
+                                    blueOffMessage.makeMessageWithPayloadAndCommand("", messageCodeByte);
+                                } else {
+                                    blueOffMessage.makeMessageWithPayloadAndCommand(destinationByte, "", messageCodeByte, Message.blueLedOffCode);
+                                }
+                                
+                                sendMessage(blueOffMessage);
+                                break;
+//                            case 7:
+//                                // Send YES
+//                                Message yesMessage = new Message((byte) sessionID);
+//                                yesMessage.makeYesMessage();
+//                                sendMessage(yesMessage);
+//                                break;
+//                            case 8:
+//                                // Send NO
+//                                Message noMessage = new Message((byte) sessionID);
+//                                noMessage.makeNoMessage();
+//                                sendMessage(noMessage);
+//                                break;
                             default:
                                 // Nothing
                                 break;
