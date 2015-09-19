@@ -42,6 +42,8 @@ public class Message {
     public static final byte blueLedOnCode = (byte) 0xF5;
     public static final byte blueLedOffCode = (byte) 0xF6;
     
+    public static final byte getCoordinatesMessageCode = (byte) 0xF7;
+    
     
     private final String connectionMessagePayload = "Hello";
     private final String confirmationMessagePayload = "Ok";
@@ -76,7 +78,8 @@ public class Message {
         this.senderID = senderID;
         this.payloadBytes = payloadBytes;
         
-        this.byteArrayLength = Message.numHeaderBytes + this.payloadBytes.length;
+        // GABRIEL DISSE QUE AQUI PODE BUGGAR
+        this.byteArrayLength = Message.numHeaderBytes + this.payloadBytes.length + 1;
         
         this.senderIDIsSet = true;
         this.packReceiveMessage();
@@ -176,6 +179,21 @@ public class Message {
         this.packSendMessage();
     }
     
+    public void makeMessageWithPayloadAndCommand(int payload, byte messageCodeByte) {
+        
+        this.messageCodeByte = messageCodeByte;
+        this.payloadBytes = new byte[] {
+            (byte) payload
+        };
+        
+        this.byteArrayLength = Message.numHeaderBytes + this.payloadBytes.length;
+        
+//        byte[] byteArrayInt = this.intToByteArray(byteArrayLength);
+        this.totalPayloadLengthByte = (byte) this.byteArrayLength;
+
+        this.packSendMessage();
+    }
+    
     public void makeMessageWithPayloadAndCommand(byte destinationID, String payload, byte messageCodeByte) {
         
         this.messageCodeByte = messageCodeByte;
@@ -197,6 +215,25 @@ public class Message {
         this.secondMessageCodeByte = secondMessageCodeByte;
         this.senderID = destinationID;
         this.payloadBytes = payload.getBytes();
+        
+        this.byteArrayLength = Message.numHeaderBytes + this.payloadBytes.length + 2;
+        
+        byte[] byteArrayInt = this.intToByteArray(byteArrayLength);
+        this.totalPayloadLengthByte = (byte) byteArrayInt[byteArrayInt.length - 1];
+
+        this.senderIDIsSet = true;
+        this.secondMessageCodeIsSet = true;
+        this.packSendMessage();
+    }
+    
+    public void makeMessageWithPayloadAndCommand(byte destinationID, int payload, byte messageCodeByte, byte secondMessageCodeByte) {
+        
+        this.messageCodeByte = messageCodeByte;
+        this.secondMessageCodeByte = secondMessageCodeByte;
+        this.senderID = destinationID;
+        this.payloadBytes = new byte[] {
+            (byte) payload
+        };
         
         this.byteArrayLength = Message.numHeaderBytes + this.payloadBytes.length + 2;
         

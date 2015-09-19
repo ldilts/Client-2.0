@@ -159,7 +159,7 @@ public class ClientView extends javax.swing.JFrame {
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel1.setText("Client v2.1");
 
-        clientComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Send Text", "Red LED On", "Red LED Off", "Green LED On", "Green LED Off", "Blue LED On", "Blue LED Off" }));
+        clientComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Send Text", "Get Coordinates: ESP8266", "Red LED On", "Red LED Off", "Green LED On", "Green LED Off", "Blue LED On", "Blue LED Off" }));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);

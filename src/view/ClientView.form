@@ -183,14 +183,15 @@
     <Component class="javax.swing.JComboBox" name="clientComboBox">
       <Properties>
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-          <StringArray count="7">
+          <StringArray count="8">
             <StringItem index="0" value="Send Text"/>
-            <StringItem index="1" value="Red LED On"/>
-            <StringItem index="2" value="Red LED Off"/>
-            <StringItem index="3" value="Green LED On"/>
-            <StringItem index="4" value="Green LED Off"/>
-            <StringItem index="5" value="Blue LED On"/>
-            <StringItem index="6" value="Blue LED Off"/>
+            <StringItem index="1" value="Get Coordinates: ESP8266"/>
+            <StringItem index="2" value="Red LED On"/>
+            <StringItem index="3" value="Red LED Off"/>
+            <StringItem index="4" value="Green LED On"/>
+            <StringItem index="5" value="Green LED Off"/>
+            <StringItem index="6" value="Blue LED On"/>
+            <StringItem index="7" value="Blue LED Off"/>
           </StringArray>
         </Property>
       </Properties>

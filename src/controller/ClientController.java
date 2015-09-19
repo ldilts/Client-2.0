@@ -192,6 +192,18 @@ public class ClientController implements Runnable {
                 // Do Blue off -> Retrun Confirmation
                 this.theView.setBlueOff();
                 break;
+            case (byte) 0x72:
+                // 
+                System.out.println("A client has replied!");
+                try {
+                    String coordinatesMessage = new String(message.getPayloadBytes(), "UTF-8"); 
+                    this.theView.setOutput(coordinatesMessage);
+                } catch (UnsupportedEncodingException ex) {
+                    Logger.getLogger(ClientController.class.getName()).log(Level.SEVERE, null, ex);
+                    success = false;
+                    break;
+                }
+                break;
             case (byte) 0xF8:
                 // Return date and time
                 break;
@@ -394,6 +406,19 @@ public class ClientController implements Runnable {
                                 sendMessage(userInputMessage);
                                 break;
                             case 1:
+                                // Send Get Coordinates Message
+                                Message corrdinatesMessage = new Message((byte) sessionID);
+                                
+                                if (forServer) {
+                                    corrdinatesMessage.makeMessageWithPayloadAndCommand(sessionID, messageCodeByte);
+                                } else {
+                                    corrdinatesMessage.makeMessageWithPayloadAndCommand(destinationByte, sessionID, messageCodeByte, Message.getCoordinatesMessageCode);
+                                }
+                                
+                                sendMessage(corrdinatesMessage);
+                                
+                                break;
+                            case 2:
                                 // Red LED On
                                 Message redOnMessage = new Message((byte) sessionID);
                                 
@@ -405,7 +430,7 @@ public class ClientController implements Runnable {
                                 
                                 sendMessage(redOnMessage);
                                 break;
-                            case 2:
+                            case 3:
                                 // Red lED Off
                                 Message redOffMessage = new Message((byte) sessionID);
                                 
@@ -417,7 +442,7 @@ public class ClientController implements Runnable {
                                 
                                 sendMessage(redOffMessage);
                                 break;
-                            case 3:
+                            case 4:
                                 // Green LED On
                                 Message greenOnMessage = new Message((byte) sessionID);
                                 
@@ -429,7 +454,7 @@ public class ClientController implements Runnable {
                                 
                                 sendMessage(greenOnMessage);
                                 break;
-                            case 4:
+                            case 5:
                                 // Green LED Off
                                 Message greenOffMessage = new Message((byte) sessionID);
                                 
@@ -441,7 +466,7 @@ public class ClientController implements Runnable {
                                 
                                 sendMessage(greenOffMessage);
                                 break;
-                            case 5:
+                            case 6:
                                 // Blue LED On
                                 Message blueOnMessage = new Message((byte) sessionID);
                                 
@@ -453,7 +478,7 @@ public class ClientController implements Runnable {
                                 
                                 sendMessage(blueOnMessage);
                                 break;
-                            case 6:
+                            case 7:
                                 // Blue LED Off
                                 Message blueOffMessage = new Message((byte) sessionID);
                                 
