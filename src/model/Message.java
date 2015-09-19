@@ -108,9 +108,10 @@ public class Message {
     
     public void makeConfirmationMessage(boolean toServer, byte senderID) {
         if (toServer) {
-            this.makeMessageWithPayloadAndCommand(confirmationMessagePayload, Message.serverReplyMessageCode);
+            this.makeMessageWithPayloadAndCommand(confirmationMessagePayload, Message.serverCrossCommandMessageCode);
         } else {
-            this.makeMessageWithPayloadAndCommand(senderID, confirmationMessagePayload, Message.clientReplyMessageCode);
+            this.makeMessageWithPayloadAndCommand(senderID, confirmationMessagePayload, Message.serverCrossCommandMessageCode);
+            this.makeMessageWithPayloadAndCommand(senderID, confirmationMessagePayload, Message.serverCrossCommandMessageCode, Message.clientReplyMessageCode);
         }
         
         this.packSendMessage();
