@@ -108,9 +108,9 @@ public class Message {
     
     public void makeConfirmationMessage(boolean toServer, byte senderID) {
         if (toServer) {
-            this.makeMessageWithPayloadAndCommand(confirmationMessagePayload, Message.serverCrossCommandMessageCode);
+            this.makeMessageWithPayloadAndCommand(confirmationMessagePayload, Message.serverReplyMessageCode);
         } else {
-            this.makeMessageWithPayloadAndCommand(senderID, confirmationMessagePayload, Message.serverCrossCommandMessageCode);
+//            this.makeMessageWithPayloadAndCommand(senderID, confirmationMessagePayload, Message.serverCrossCommandMessageCode);
             this.makeMessageWithPayloadAndCommand(senderID, confirmationMessagePayload, Message.serverCrossCommandMessageCode, Message.clientReplyMessageCode);
         }
         
@@ -121,7 +121,7 @@ public class Message {
         if (toServer) {
             this.makeMessageWithPayloadAndCommand(errorMessagePayload, Message.serverReplyMessageCode);
         } else {
-            this.makeMessageWithPayloadAndCommand(senderID, errorMessagePayload, Message.serverReplyMessageCode);
+            this.makeMessageWithPayloadAndCommand(senderID, errorMessagePayload, Message.serverCrossCommandMessageCode, Message.clientReplyMessageCode);
         }
 
         this.packSendMessage();
@@ -161,7 +161,7 @@ public class Message {
             this.makeMessageWithPayloadAndCommand(notSupportedMessagePayload, Message.serverReplyMessageCode);
         } else {
 //            this.makeMessageWithPayloadAndCommand(senderID, sCertDate, Message.clientReplyMessageCode);
-            this.makeMessageWithPayloadAndCommand(senderID, notSupportedMessagePayload, Message.serverReplyMessageCode);
+            this.makeMessageWithPayloadAndCommand(senderID, notSupportedMessagePayload, Message.serverCrossCommandMessageCode);
         }
         
         this.packSendMessage();

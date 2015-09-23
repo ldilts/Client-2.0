@@ -83,55 +83,37 @@ public class ClientController implements Runnable {
                         if (length > 0) {
                             byte startByte = dataInput.readByte();
                             if (startByte == (byte) 0x78) {
-                                 byte sessionIdByte = dataInput.readByte();
-                                 byte messageCodeByte = dataInput.readByte();
-                                 byte totalPayloadLengthByte = dataInput.readByte();
-
-                                 
-                                if (messageCodeByte == Message.clientReplyMessageCode) {
-                                    // From another Client
-
-                                    byte senderIDByte = dataInput.readByte();
-
-                                    byte[] payloadBytes = new byte[totalPayloadLengthByte - Message.numHeaderBytes - 1];
-
-                                    for (int i = 0; i < totalPayloadLengthByte - Message.numHeaderBytes - 1; i++) {
-                                        payloadBytes[i] = dataInput.readByte();
-                                    }
-
-                                    Message message = new Message(sessionIdByte, 
-                                            messageCodeByte, 
-                                            totalPayloadLengthByte,
-                                            senderIDByte,
-                                            payloadBytes);
-
-                                        this.messageReceived(message, false);
-                                } 
+                                byte sessionIdByte = dataInput.readByte();
+                                byte messageCodeByte = dataInput.readByte();
+                                byte totalPayloadLengthByte = dataInput.readByte();
+                                byte senderIDByte = dataInput.readByte();
                                 
-                                if (messageCodeByte == Message.serverReplyMessageCode || messageCodeByte == Message.keepAliveMessageCode) {
-                                    // From Server
-
-                                    byte[] payloadBytes = new byte[totalPayloadLengthByte - Message.numHeaderBytes];
-
-                                    for (int i = 0; i < totalPayloadLengthByte - Message.numHeaderBytes; i++) {
-                                        payloadBytes[i] = dataInput.readByte();
-                                    }
-
-                                    Message message = new Message(sessionIdByte, 
-                                            messageCodeByte, 
-                                            totalPayloadLengthByte, 
-                                            payloadBytes);
-
-                                    this.messageReceived(message, true);
+                                if (messageCodeByte != Message.keepAliveMessageCode) {
+                                    System.out.println("");
                                 }
 
-//                                 else {
-//                                     // Message not supported
-//                                     System.out.println("Received a un-supported message");
-//
-//                                     // TODO remove remaining bytes from stream
-//                                 }
-                             }
+                                byte[] payloadBytes = new byte[totalPayloadLengthByte - Message.numHeaderBytes - 1];
+
+                                for (int i = 0; i < totalPayloadLengthByte - Message.numHeaderBytes - 1; i++) {
+                                    payloadBytes[i] = dataInput.readByte();
+                                }
+
+                                Message message = new Message(sessionIdByte, 
+                                        messageCodeByte, 
+                                        totalPayloadLengthByte,
+                                        senderIDByte,
+                                        payloadBytes);
+                                
+                                if (sessionIdByte == senderIDByte) {
+                                    // From Server
+                                    this.messageReceived(message, true);
+                                } else {
+                                    // From Client
+                                    this.messageReceived(message, false);
+                                }
+                                
+                                
+                            }
                         }
                     } catch (IOException ex) {
                         Logger.getLogger(ClientModel.class.getName()).log(Level.SEVERE, null, ex);
@@ -200,6 +182,7 @@ public class ClientController implements Runnable {
                 try {
                     String coordinatesMessage = new String(message.getPayloadBytes(), "UTF-8"); 
                     this.theView.setOutput(coordinatesMessage);
+                    success = true;
                 } catch (UnsupportedEncodingException ex) {
                     Logger.getLogger(ClientController.class.getName()).log(Level.SEVERE, null, ex);
                     success = false;
@@ -227,8 +210,11 @@ public class ClientController implements Runnable {
                 break;
         }
         
-        // send response
-        this.sendMessage(this.theModel.makeResponseToMessage(message, fromServer, success));
+        if (message.getMessageCodeByte() != (byte)0x72) {
+            // send response
+            this.sendMessage(this.theModel.makeResponseToMessage(message, fromServer, success));
+        }
+        
     }
     
 //    private void messageToBeSent(int command) {

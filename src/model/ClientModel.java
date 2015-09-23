@@ -110,12 +110,7 @@ public class ClientModel implements Runnable {
         // The Deafult response is an OK message
         Message response;
         
-        if (fromServer) {
-            response = this.makeConfirmationReplyMessage(fromServer, (byte) 0x00);
-        } else {
-            response = this.makeConfirmationReplyMessage(fromServer, message.getSenderIDByte());
-        }
-        
+        response = this.makeConfirmationReplyMessage(fromServer, message.getSenderIDByte());
         
         switch (message.getMessageCodeByte()) {
             case (byte) 0x4B:
