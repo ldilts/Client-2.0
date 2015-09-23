@@ -40,12 +40,12 @@ public class ClientController implements Runnable {
     private final ClientModel theModel;
     
     private Socket clientSocket;
-    private DataInputStream dataInput;
-    private DataOutputStream dataOutput;
+    public static DataInputStream dataInput;
+    public static DataOutputStream dataOutput;
     
-    private boolean socketConnected = false;
-    private boolean outputConnected = false;
-    private boolean inputConnected = false;
+    public static boolean socketConnected = false;
+    public static boolean outputConnected = false;
+    public static boolean inputConnected = false;
     
     private Thread inputThread;
 
@@ -63,6 +63,14 @@ public class ClientController implements Runnable {
             this.theView.setClientTitle("Client " + this.sessionID);
 
             this.theView.addClientListener(new ClientListener());
+    }
+    
+      public static DataInputStream getDataInput() {
+        return dataInput;
+    }
+
+    public static DataOutputStream getDataOutput() {
+        return dataOutput;
     }
     
     public void startInputObserving() {
@@ -478,18 +486,35 @@ public class ClientController implements Runnable {
                                 
                                 sendMessage(blueOffMessage);
                                 break;
-//                            case 7:
-//                                // Send YES
-//                                Message yesMessage = new Message((byte) sessionID);
-//                                yesMessage.makeYesMessage();
-//                                sendMessage(yesMessage);
-//                                break;
-//                            case 8:
-//                                // Send NO
-//                                Message noMessage = new Message((byte) sessionID);
-//                                noMessage.makeNoMessage();
-//                                sendMessage(noMessage);
-//                                break;
+                            case 8:
+                                // Request Periodic 
+//                                int foo = Integer.parseInt("123")
+                                Message periodicRequestMessage = new Message((byte) sessionID);
+                                
+                                if (forServer) {
+                                    // Do nothing :P
+                                    System.out.println("Please select a destination ID");
+                                    theView.setOutput("Please select a destination ID");
+                                } else {
+                                    periodicRequestMessage.makeMessageWithPayloadAndCommand(destinationByte, theView.getInput(), messageCodeByte, Message.periodicRequestCode);
+                                }
+                                
+                                sendMessage(periodicRequestMessage);
+                                break;
+                            case 9:
+                                // Request Trigger Event
+                                Message triggerEventMessage = new Message((byte) sessionID);
+                                
+                                if (forServer) {
+                                    // Do nothing :P
+                                    System.out.println("Please select a destination ID");
+                                    theView.setOutput("Please select a destination ID");
+                                } else {
+                                    triggerEventMessage.makeMessageWithPayloadAndCommand(destinationByte, theView.getInput(), messageCodeByte, Message.eventTriggerCode);
+                                }
+                                
+                                sendMessage(triggerEventMessage);
+                                break;
                             default:
                                 // Nothing
                                 break;

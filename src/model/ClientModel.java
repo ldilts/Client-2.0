@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 public class ClientModel implements Runnable {
     
 
-    private int sessionID = 0;
+    private static int sessionID = 0;
     
     private static int keepAliveCount = 0;
     public Thread thread = null;
@@ -27,6 +27,10 @@ public class ClientModel implements Runnable {
     
     public ClientModel(int sessionID) {
         this.sessionID = sessionID;
+    }
+    
+    public static int getSessionID() {
+        return sessionID;
     }
     
     public int getKeepAliveCount() {

@@ -42,6 +42,9 @@ public class Message {
     public static final byte blueLedOnCode = (byte) 0xF5;
     public static final byte blueLedOffCode = (byte) 0xF6;
     
+    public static final byte periodicRequestCode = (byte) 0xA1;
+    public static final byte eventTriggerCode = (byte) 0xA2;
+    
     public static final byte getCoordinatesMessageCode = (byte) 0xF7;
     
     
