@@ -106,7 +106,9 @@ public class ClientController implements Runnable {
                                             payloadBytes);
 
                                         this.messageReceived(message, false);
-                                } else {
+                                } 
+                                
+                                if (messageCodeByte == Message.serverReplyMessageCode || messageCodeByte == Message.keepAliveMessageCode) {
                                     // From Server
 
                                     byte[] payloadBytes = new byte[totalPayloadLengthByte - Message.numHeaderBytes];
