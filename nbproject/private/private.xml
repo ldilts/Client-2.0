@@ -6,6 +6,8 @@
             <file>file:/Users/Lucas/NetBeansProjects/Client%202/src/model/Message.java</file>
             <file>file:/Users/Lucas/NetBeansProjects/Client%202/src/main/Main.java</file>
             <file>file:/Users/Lucas/NetBeansProjects/Client%202/src/controller/ClientController.java</file>
+            <file>file:/Users/Lucas/NetBeansProjects/Client%202/src/model/MessageThreadEvent.java</file>
+            <file>file:/Users/Lucas/NetBeansProjects/Client%202/src/model/MessageThreadPeriodic.java</file>
             <file>file:/Users/Lucas/NetBeansProjects/Client%202/src/model/ClientModel.java</file>
             <file>file:/Users/Lucas/NetBeansProjects/Client%202/src/view/ClientView.java</file>
         </group>

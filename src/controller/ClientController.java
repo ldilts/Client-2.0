@@ -28,6 +28,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import model.ClientModel;
 import model.Message;
+import model.MessageThreadEvent;
 import view.ClientView;
 
 /**
@@ -96,8 +97,9 @@ public class ClientController implements Runnable {
                                 byte totalPayloadLengthByte = dataInput.readByte();
                                 byte senderIDByte = dataInput.readByte();
                                 
-                                if (messageCodeByte != Message.keepAliveMessageCode) {
-                                    System.out.println("");
+                                if (messageCodeByte != Message.keepAliveMessageCode ) {
+                                    String s2 = new String(new byte[] {messageCodeByte}, "UTF-8");
+                                    System.out.println("Not KA");
                                 }
 
                                 byte[] payloadBytes = new byte[totalPayloadLengthByte - Message.numHeaderBytes - 1];
@@ -159,6 +161,23 @@ public class ClientController implements Runnable {
                     }
                 }
                 
+                break;
+            case (byte) 0xA1:
+                // Periodic
+                // Start Thread -> Return Confirmation
+                
+                String s2 = new String(message.getPayloadBytes());
+                int thing2 = Integer.parseInt("" + s2);
+                MessageThreadEvent periodicThreadEvent = new MessageThreadEvent(thing2, message.getSenderIDByte());
+                new Thread(periodicThreadEvent).start();
+                break;
+            case (byte) 0xA2:
+                // Start Thread -> Return Confirmation
+                
+                String s = new String(message.getPayloadBytes());
+                int thing = Integer.parseInt(s);
+                MessageThreadEvent threadEvent = new MessageThreadEvent(thing, message.getSenderIDByte());
+                new Thread(threadEvent).start();
                 break;
             case (byte) 0xF1:
                 // Do Red on -> Retrun Confirmation

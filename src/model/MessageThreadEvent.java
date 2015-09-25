@@ -49,16 +49,16 @@ public class MessageThreadEvent implements Runnable {
                     try {
                     // write the message
                         
-                    if( ( totalPhysicalMemorySize - os.getFreePhysicalMemorySize() )< ( totalPhysicalMemorySize * (maxMemoryUsageTrigger/100) )  ){
+                    if( ( totalPhysicalMemorySize - os.getFreePhysicalMemorySize() )< ( totalPhysicalMemorySize * maxMemoryUsageTrigger/100 )  ){
                    // MUTEX DOWN
                     // write the message
                     controller.ClientController.getDataOutput().writeByte('x'); // start byte
                     controller.ClientController.getDataOutput().writeByte((byte)ClientModel.getSessionID()); // myId
                     controller.ClientController.getDataOutput().writeByte('H'); // cmd H
-                    controller.ClientController.getDataOutput().writeByte((byte)(7 + msg.length())); // PayloadLengh
+                    controller.ClientController.getDataOutput().writeByte((byte)(6 + msg.length())); // PayloadLengh
                     controller.ClientController.getDataOutput().writeByte(idIHaveToSend); // id Destino
                     controller.ClientController.getDataOutput().writeByte('r'); // comando
-                    controller.ClientController.getDataOutput().writeByte((byte)ClientModel.getSessionID()); // myId
+                   
                      
                      for(int i = 0 ; i < msg.length() ; i ++ ){
                         controller.ClientController.getDataOutput().writeByte((byte)(msg.toCharArray()[i])); // payload
