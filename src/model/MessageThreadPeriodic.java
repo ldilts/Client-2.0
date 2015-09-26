@@ -31,30 +31,42 @@ public class MessageThreadPeriodic implements Runnable {
                   java.lang.management.ManagementFactory.getOperatingSystemMXBean();
                   long physicalMemorySize ;
                   String msg;
+                  
+                  
         while(true){
-      
+      System.out.println("Party!");
              // If the client isnotconnected hold it. KILL ??
-            while(!controller.ClientController.inputConnected)
-            while(!controller.ClientController.outputConnected)
-            while(!controller.ClientController.socketConnected)
+//            while(!controller.ClientController.inputConnected)
+//            while(!controller.ClientController.outputConnected)
+//            while(!controller.ClientController.socketConnected)
              
             //controller.ClientController.getDataOutput();
              try {
                     physicalMemorySize = os.getFreePhysicalMemorySize();
+                    System.out.println("" + physicalMemorySize);
                     msg = Long.toString(physicalMemorySize);
                     // MUTEX DOWN
+                    
                     // write the message
-                    controller.ClientController.getDataOutput().write((byte) 0x78); // start byte
-                    controller.ClientController.getDataOutput().write((byte)ClientModel.getSessionID()); // myId
-                    controller.ClientController.getDataOutput().write(Message.serverCrossCommandMessageCode); // cmd H
-                    controller.ClientController.getDataOutput().write((byte)(6 + msg.length())); // PayloadLengh
-                    controller.ClientController.getDataOutput().write(idIHaveToSend); // id Destino
-                    controller.ClientController.getDataOutput().write((byte) 'r'); 
+                    byte[] BYTE = new byte[1] ;
+                    BYTE[0] = 0x78;
+                    controller.ClientController.getDataOutput().write(BYTE); // start byte
+                     BYTE[0] =(byte)ClientModel.getSessionID();
+                    controller.ClientController.getDataOutput().write(BYTE); // start byte
+                    BYTE[0] = Message.serverCrossCommandMessageCode;
+                    controller.ClientController.getDataOutput().write(BYTE); // start byte
+                    BYTE[0] = (byte)(6 + msg.length());
+                    controller.ClientController.getDataOutput().write(BYTE); // start byte
+                    BYTE[0] = idIHaveToSend;
+                    controller.ClientController.getDataOutput().write(BYTE); // start byte
+                    BYTE[0] = (byte) 'r';
+                    controller.ClientController.getDataOutput().write(BYTE); // start byte
                    
                     
                      
                     for(int i = 0 ; i < msg.length() ; i ++ ){
-                        controller.ClientController.getDataOutput().write((byte)(msg.toCharArray()[i])); // payload
+                       BYTE[0] = (byte)(msg.toCharArray()[i]);
+                        controller.ClientController.getDataOutput().write(BYTE); // start byte
                     }
                     
 //                    controller.ClientController.getDataOutput().writeByte((byte)(physicalMemorySize >>>  56)+30); // payload
@@ -72,9 +84,9 @@ public class MessageThreadPeriodic implements Runnable {
                 }
             // Sleeps timeToSend s 
             try {
-                Thread.sleep(1000*100);
+                Thread.sleep(1000*timeToSend);
             } catch (InterruptedException ex) {
-                Logger.getLogger(MessageThreadEvent.class.getName()).log(Level.SEVERE, null, ex);
+               
             }
        
         }

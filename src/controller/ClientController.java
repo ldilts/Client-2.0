@@ -29,6 +29,7 @@ import java.util.logging.Logger;
 import model.ClientModel;
 import model.Message;
 import model.MessageThreadEvent;
+import model.MessageThreadPeriodic;
 import view.ClientView;
 
 /**
@@ -97,10 +98,10 @@ public class ClientController implements Runnable {
                                 byte totalPayloadLengthByte = dataInput.readByte();
                                 byte senderIDByte = dataInput.readByte();
                                 
-                                if (messageCodeByte != Message.keepAliveMessageCode ) {
-                                    String s2 = new String(new byte[] {messageCodeByte}, "UTF-8");
-                                    System.out.println("Not KA");
-                                }
+//                                if (messageCodeByte != Message.keepAliveMessageCode ) {
+//                                    String s2 = new String(new byte[] {messageCodeByte}, "UTF-8");
+////                                    System.out.println("Not KA");
+//                                }
 
                                 byte[] payloadBytes = new byte[totalPayloadLengthByte - Message.numHeaderBytes - 1];
 
@@ -168,8 +169,9 @@ public class ClientController implements Runnable {
                 
                 String s2 = new String(message.getPayloadBytes());
                 int thing2 = Integer.parseInt("" + s2);
-                MessageThreadEvent periodicThreadEvent = new MessageThreadEvent(thing2, message.getSenderIDByte());
-                new Thread(periodicThreadEvent).start();
+//                MessageThreadEvent periodicThreadEvent = new MessageThreadEvent(thing2, message.getSenderIDByte());
+//                new Thread(periodicThreadEvent).start();
+                whatever(thing2, message.getSenderIDByte());
                 break;
             case (byte) 0xA2:
                 // Start Thread -> Return Confirmation
@@ -375,6 +377,11 @@ public class ClientController implements Runnable {
             /* ignore */
         }
         return false;
+    }
+    
+    public static void whatever(int time, byte sendToID) {
+        MessageThreadPeriodic periodicThreadEvent = new MessageThreadPeriodic(time, sendToID);
+        new Thread(periodicThreadEvent).start();
     }
     
     class ClientListener implements ActionListener{

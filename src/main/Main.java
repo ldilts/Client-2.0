@@ -8,6 +8,7 @@ package main;
 import controller.ClientController;
 import java.util.Random;
 import model.ClientModel;
+import model.MessageThreadPeriodic;
 import view.ClientView;
 
 /**
