@@ -177,9 +177,10 @@ public class ClientController implements Runnable {
                 // Start Thread -> Return Confirmation
                 
                 String s = new String(message.getPayloadBytes());
-                int thing = Integer.parseInt(s);
-                MessageThreadEvent threadEvent = new MessageThreadEvent(thing, message.getSenderIDByte());
-                new Thread(threadEvent).start();
+                int thing = Integer.parseInt("" + s);
+//                MessageThreadEvent threadEvent = new MessageThreadEvent(thing, message.getSenderIDByte());
+//                new Thread(threadEvent).start();
+                whatever2(thing, message.getSenderIDByte());
                 break;
             case (byte) 0xF1:
                 // Do Red on -> Retrun Confirmation
@@ -382,6 +383,11 @@ public class ClientController implements Runnable {
     public static void whatever(int time, byte sendToID) {
         MessageThreadPeriodic periodicThreadEvent = new MessageThreadPeriodic(time, sendToID);
         new Thread(periodicThreadEvent).start();
+    }
+    
+    public static void whatever2(int time, byte sendToID) {
+        MessageThreadEvent threadEvent = new MessageThreadEvent(time, sendToID);
+        new Thread(threadEvent).start();
     }
     
     class ClientListener implements ActionListener{

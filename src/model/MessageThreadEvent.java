@@ -42,28 +42,58 @@ public class MessageThreadEvent implements Runnable {
         while(true){
             
              // If the client isnotconnected hold it.
-            while(!controller.ClientController.inputConnected)
-            while(!controller.ClientController.outputConnected)
+//            while(!controller.ClientController.inputConnected)
+//            while(!controller.ClientController.outputConnected)
             while(!controller.ClientController.socketConnected)
             //controller.ClientController.getDataOutput();
                     try {
                     // write the message
-                        
+                         System.out.println("ttteee");
                     if( ( totalPhysicalMemorySize - os.getFreePhysicalMemorySize() )< ( totalPhysicalMemorySize * maxMemoryUsageTrigger/100 )  ){
                    // MUTEX DOWN
-                    // write the message
-                    controller.ClientController.getDataOutput().writeByte('x'); // start byte
-                    controller.ClientController.getDataOutput().writeByte((byte)ClientModel.getSessionID()); // myId
-                    controller.ClientController.getDataOutput().writeByte('H'); // cmd H
-                    controller.ClientController.getDataOutput().writeByte((byte)(6 + msg.length())); // PayloadLengh
-                    controller.ClientController.getDataOutput().writeByte(idIHaveToSend); // id Destino
-                    controller.ClientController.getDataOutput().writeByte('r'); // comando
+                         System.out.println("aaa");
+                        System.out.println(totalPhysicalMemorySize - os.getFreePhysicalMemorySize());
+                        System.out.println(totalPhysicalMemorySize * maxMemoryUsageTrigger/100);
+//                    // write the message
+//                    controller.ClientController.getDataOutput().writeByte('x'); // start byte
+//                    controller.ClientController.getDataOutput().writeByte((byte)ClientModel.getSessionID()); // myId
+//                    controller.ClientController.getDataOutput().writeByte('H'); // cmd H
+//                    controller.ClientController.getDataOutput().writeByte((byte)(6 + msg.length())); // PayloadLengh
+//                    controller.ClientController.getDataOutput().writeByte(idIHaveToSend); // id Destino
+//                    controller.ClientController.getDataOutput().writeByte('r'); // comando
+//                   
+//                     
+//                     for(int i = 0 ; i < msg.length() ; i ++ ){
+//                        controller.ClientController.getDataOutput().writeByte((byte)(msg.toCharArray()[i])); // payload
+//                      }
+                        
+                        // write the message
+                    byte[] BYTE = new byte[1] ;
+                    BYTE[0] = 0x78;
+                    controller.ClientController.getDataOutput().write(BYTE); // start byte
+                     BYTE[0] =(byte)ClientModel.getSessionID();
+                    controller.ClientController.getDataOutput().write(BYTE); // start byte
+                    BYTE[0] = Message.serverCrossCommandMessageCode;
+                    controller.ClientController.getDataOutput().write(BYTE); // start byte
+                    BYTE[0] = (byte)(6 + msg.length());
+                    controller.ClientController.getDataOutput().write(BYTE); // start byte
+                    BYTE[0] = idIHaveToSend;
+                    controller.ClientController.getDataOutput().write(BYTE); // start byte
+                    BYTE[0] = (byte) 'r';
+                    controller.ClientController.getDataOutput().write(BYTE); // start byte
                    
+                    
                      
-                     for(int i = 0 ; i < msg.length() ; i ++ ){
-                        controller.ClientController.getDataOutput().writeByte((byte)(msg.toCharArray()[i])); // payload
-                      }
-                     
+                    for(int i = 0 ; i < msg.length() ; i ++ ){
+                       BYTE[0] = (byte)(msg.toCharArray()[i]);
+                        controller.ClientController.getDataOutput().write(BYTE); // start byte
+                    }
+                    
+                     try {
+                Thread.sleep(10000);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(MessageThreadEvent.class.getName()).log(Level.SEVERE, null, ex);
+            }
                       // MUTEX UP
                     //controller.ClientController.getDataOutput().writeByte((byte)()); // payload
                     }
