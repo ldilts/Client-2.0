@@ -38,7 +38,7 @@ public class MessageThreadPeriodic implements Runnable {
              // If the client isnotconnected hold it. KILL ??
 //            while(!controller.ClientController.inputConnected)
 //            while(!controller.ClientController.outputConnected)
-            while(!controller.ClientController.socketConnected)
+//            while(!controller.ClientController.socketConnected)
              
             //controller.ClientController.getDataOutput();
              try {
