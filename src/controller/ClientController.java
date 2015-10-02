@@ -53,7 +53,7 @@ public class ClientController implements Runnable {
 
     private int sessionID = 0;
     private static final String SERVER_ADDRESS = "200.19.188.1";
-    private static final int TCP_SERVER_PORT = 20200;
+    private static final int TCP_SERVER_PORT = 20400;
 //    private static final String SERVER_ADDRESS = "localhost";
 //    private static final int TCP_SERVER_PORT = 9999;
 	
@@ -177,9 +177,10 @@ public class ClientController implements Runnable {
                 // Start Thread -> Return Confirmation
                 
                 String s = new String(message.getPayloadBytes());
-                int thing = Integer.parseInt(s);
-                MessageThreadEvent threadEvent = new MessageThreadEvent(thing, message.getSenderIDByte());
-                new Thread(threadEvent).start();
+                int thing = Integer.parseInt("" + s);
+//                MessageThreadEvent periodicThreadEvent = new MessageThreadEvent(thing2, message.getSenderIDByte());
+//                new Thread(periodicThreadEvent).start();
+                whatever1(thing, message.getSenderIDByte());
                 break;
             case (byte) 0xF1:
                 // Do Red on -> Retrun Confirmation
@@ -364,6 +365,7 @@ public class ClientController implements Runnable {
     private void sendMessage(Message message) {
         try {
             // write the message
+            System.out.println(message.getByteArray().toString());
             dataOutput.write(message.getByteArray());
         } catch (IOException ex) {
             Logger.getLogger(ClientModel.class.getName()).log(Level.SEVERE, null, ex);
@@ -382,6 +384,12 @@ public class ClientController implements Runnable {
     public static void whatever(int time, byte sendToID) {
         MessageThreadPeriodic periodicThreadEvent = new MessageThreadPeriodic(time, sendToID);
         new Thread(periodicThreadEvent).start();
+    }
+    
+        
+    public static void whatever1(int time, byte sendToID) {
+        MessageThreadEvent ThreadEvent = new  MessageThreadEvent(time, sendToID);
+        new Thread(ThreadEvent).start();
     }
     
     class ClientListener implements ActionListener{

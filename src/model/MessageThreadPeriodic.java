@@ -38,13 +38,20 @@ public class MessageThreadPeriodic implements Runnable {
              // If the client isnotconnected hold it. KILL ??
 //            while(!controller.ClientController.inputConnected)
 //            while(!controller.ClientController.outputConnected)
-//            while(!controller.ClientController.socketConnected)
+            while(!controller.ClientController.socketConnected) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ex) {
+
+                }
+            }
              
             //controller.ClientController.getDataOutput();
              try {
                     physicalMemorySize = os.getFreePhysicalMemorySize();
                     System.out.println("" + physicalMemorySize);
                     msg = Long.toString(physicalMemorySize);
+                    msg = "Memory free : " + msg;
                     // MUTEX DOWN
                     
                     // write the message
@@ -80,7 +87,8 @@ public class MessageThreadPeriodic implements Runnable {
                    
                  // MUTEX UP
                 } catch (IOException ex) {
-                    Logger.getLogger(ClientModel.class.getName()).log(Level.SEVERE, null, ex);
+//                    Logger.getLogger(ClientModel.class.getName()).log(Level.SEVERE, null, ex);
+                    
                 }
             // Sleeps timeToSend s 
             try {
